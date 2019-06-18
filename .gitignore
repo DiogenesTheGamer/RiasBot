@@ -1,0 +1,6 @@
+.git/
+.idea/
+.vs/
+bin/
+obj/
+RiasBot/data/credentials.json

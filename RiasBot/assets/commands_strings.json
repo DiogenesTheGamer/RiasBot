@@ -1,0 +1,1396 @@
+{
+  "setgreet": {
+    "Command": "setgreet greet",
+    "Description": "Toggle announcements on the current channel when someone joins the server.",
+    "Remarks": [
+      "[prefix]setgreet"
+    ]
+  },
+
+  "greetmessage": {
+    "Command": "greetmessage greetmsg",
+    "Description": "Set the announcement message when someone joins the server.\nPlaceholders:\n`%mention%` - will mention the user who joins\n`%user%` - will write the user's username\n`%server%` or `%guild%` - will put the name of the server\nEmbeds are supported, json form.",
+    "Remarks": [
+      "[prefix]greetmsg Welcome %mention% to..."
+    ]
+  },
+
+  "setbye": {
+    "Command": "setbye bye",
+    "Description": "Toggle announcements on the current channel when someone leaves the server.",
+    "Remarks": [
+      "[prefix]bye"
+    ]
+  },
+
+  "byemessage": {
+    "Command": "byemessage byemsg",
+    "Description": "Set the announcement message when someone leaves the server.\nPlaceholders:\n`%mention%` - will mention the user who joins\n`%user%` - will write the user's username\n`%server%` or `%guild%` - will put the name of the server\nEmbeds are supported, json form.",
+    "Remarks": [
+      "[prefix]byemsg %user% left..."
+    ]
+  },
+
+  "setmodlog": {
+    "Command": "setmodlog modlog",
+    "Description": "Set the current channel as \"mod-log\" channel where I will post notifications about warn, mute, unmute, kick, ban, softban, pruneban. Provide no arguments to disable it from the current channel.",
+    "Remarks": [
+      "[prefix]modlog"
+    ]
+  },
+
+  "createcategory": {
+    "Command": "createcategory ccat",
+    "Description": "Create a category channel.",
+    "Remarks": [
+      "[prefix]ccat MEDIA"
+    ]
+  },
+
+  "deletecategory": {
+    "Command": "deletecategory dcat",
+    "Description": "Delete a category channel.",
+    "Remarks": [
+      "[prefix]dcat MEDIA"
+    ]
+  },
+
+  "renamecategory": {
+    "Command": "renamecategory rncat",
+    "Description": "Rename a category. Separate the old name from the new name with '->'.",
+    "Remarks": [
+      "[prefix]rncat MEDIA -> MUSIC"
+    ]
+  },
+
+  "addtextchanneltocategory": {
+    "Command": "addtextchanneltocategory atchtocat",
+    "Description": "Add a text channel to a category. Separate the channel name from the category name with '->'",
+    "Remarks": [
+      "[prefix]atchtocat music -> MEDIA"
+    ]
+  },
+
+  "addvoicechanneltocategory": {
+    "Command": "addvoicechanneltocategory avchtocat",
+    "Description": "Add a voice channel to a category. Separate the channel name from the category name with '->'",
+    "Remarks": [
+      "[prefix]avchtocat Music -> MEDIA"
+    ]
+  },
+
+  "addemote": {
+    "Command": "addemote",
+    "Description": "Add an emote on this server. PNG, JPG or GIF supported. The image must be under 256 KB.",
+    "Remarks": [
+      "[prefix]addemote https://i.imgur.com/fobETCs.png heart_diamond"
+    ]
+  },
+
+  "deleteemote": {
+    "Command": "deleteemote delemote",
+    "Description": "Delete an emote from this server.",
+    "Remarks": [
+      "[prefix]delemote heart_diamond"
+    ]
+  },
+
+  "renameemote": {
+    "Command": "renameemote rnemote",
+    "Description": "Rename an emote from this server. You need to separate the old name by the new name with '->'",
+    "Remarks": [
+      "[prefix]rnemote heart -> heart_diamond"
+    ]
+  },
+
+  "kick": {
+    "Command": "kick k",
+    "Description": "Kick an user. If you provide a reason message I will DM the user with the reason.",
+    "Remarks": [
+      "[prefix]k @User",
+      "[prefix]k @User Your behavior is bad!"
+    ]
+  },
+
+  "ban": {
+    "Command": "ban b",
+    "Description": "Ban an user. If you provide a reason message I will DM the user with the reason.",
+    "Remarks": [
+      "[prefix]b @User",
+      "[prefix]b @User You've violated many rules!"
+    ]
+  },
+
+
+  "softban": {
+    "Command": "softban sb",
+    "Description": "Ban an user, remove his messages from last 7 days, and then unban it. The result is a kick.",
+    "Remarks": [
+      "[prefix]sb @User",
+      "[prefix]sb @User Don't spam here!"
+    ]
+  },
+
+  "pruneban": {
+    "Command": "pruneban pb",
+    "Description": "Ban an user and remove his messages from last 7 days. Different from \"softban\" where the user is unbanned.",
+    "Remarks": [
+      "[prefix]pb @User",
+      "[prefix]pb @User DO NOT SPAM HERE!"
+    ]
+  },
+
+  "prune": {
+    "Command": "prune purge",
+    "Description": "`[prefix]prune x` removes last x number of messages from the channel (up to 100).\n`[prefix]prune @User` removes all User's messages in the last 100 messages.",
+    "Remarks": [
+      "[prefix]prune x",
+      "[prefix]prune @User",
+      "[prefix]prune @User x",
+      "[prefix]prune x @User"
+    ]
+  },
+
+  "mute": {
+    "Command": "mute",
+    "Description": "Mute an user from text and voice channels. You can mute temporally: months(mo), weeks(w), days(d), hours(h), minutes(m).",
+    "Remarks": [
+      "[prefix]mute @User",
+      "[prefix]mute 1d3h10m @User"
+    ]
+  },
+
+  "unmute": {
+    "Command": "unmute",
+    "Description": "Unmute an user from text and voice channels.",
+    "Remarks": [
+      "[prefix]unmute @User"
+    ]
+  },
+
+  "setmute": {
+    "Command": "setmute",
+    "Description": "Set the mute role. If the role doesn't exists it will be created.",
+    "Remarks": [
+      "[prefix]setmute role"
+    ]
+  },
+
+  "roles": {
+    "Command": "roles",
+    "Description": "Show the roles on this server.",
+    "Remarks": [
+      "[prefix]roles"
+    ]
+  },
+
+  "createrole": {
+    "Command": "createrole cr",
+    "Description": "Create a role.",
+    "Remarks": [
+      "[prefix]cr Rias"
+    ]
+  },
+
+  "deleterole": {
+    "Command": "deleterole dr",
+    "Description": "Delete a role.",
+    "Remarks": [
+      "[prefix]dr Rias"
+    ]
+  },
+
+  "rolecolor": {
+    "Command": "rolecolor rc",
+    "Description": "Set a color for a role.",
+    "Remarks": [
+      "[prefix]rc color(hex format) roleName",
+      "[prefix]rc #ffffff Rias"
+    ]
+  },
+
+  "renamerole": {
+    "Command": "renamerole rnr",
+    "Description": "Rename a Role. You need to separate the old name by the new name with '->'",
+    "Remarks": [
+      "[prefix]rnr Rias -> Rias-waifu"
+    ]
+  },
+
+  "setrole": {
+    "Command": "setrole sr",
+    "Description": "Set a role for an user.",
+    "Remarks": [
+      "[prefix]sr @User Admin"
+    ]
+  },
+
+  "removerole": {
+    "Command": "removerole rr",
+    "Description": "Remove a role from an user.",
+    "Remarks": [
+      "[prefix]rr @User Admin"
+    ]
+  },
+
+  "autoassignablerole": {
+    "Command": "autoassignablerole aar",
+    "Description": "Set a role to be auto-assigned for every user who joins the server. Provide no role to deactivate it.",
+    "Remarks": [
+      "[prefix]aar Newbie"
+    ]
+  },
+
+  "hoistrole": {
+    "Command": "hoistrole hr",
+    "Description": "Set whether or not a role should be displayed independently in the userlist.",
+    "Remarks": [
+      "[prefix]hr Admin"
+    ]
+  },
+
+  "mentionrole": {
+    "Command": "mentionrole mr",
+    "Description": "Set whether or not a role should be mentioned.",
+    "Remarks": [
+      "[prefix]mr Admin"
+    ]
+  },
+
+  "iam": {
+    "Command": "iam",
+    "Description": "Assign to yourself a role from this server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]iam kawaii"
+    ]
+  },
+
+  "iamnot": {
+    "Command": "iamnot iamn",
+    "Description": "Remove from yourself a role from this server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]iamn kawaii"
+    ]
+  },
+
+  "addselfassignablerole": {
+    "Command": "asar",
+    "Description": "Add a role in the server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]asar kawaii"
+    ]
+  },
+
+  "removeselfassignablerole": {
+    "Command": "rsar",
+    "Description": "Remove a role from the server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]rsar kawaii"
+    ]
+  },
+
+  "listselfassignableroles": {
+    "Command": "lsar",
+    "Description": "Show a list with the server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]lsar",
+      "[prefix]lsar 3"
+    ]
+  },
+
+  "updateselfassignableroles": {
+    "Command": "usar",
+    "Description": "Update the roles and their names from the server's self assignable roles list.",
+    "Remarks": [
+      "[prefix]usar"
+    ]
+  },
+
+  "setnickname": {
+    "Command": "setnickname setnick",
+    "Description": "Set an user's nickname in this server. Provide no arguments to remove the nickname.",
+    "Remarks": [
+      "[prefix]nickname @User nickname"
+    ]
+  },
+
+  "setguildname": {
+    "Command": "setservername ssn",
+    "Description": "Set this server's name.",
+    "Remarks": [
+      "[prefix]ssr Rias Club"
+    ]
+  },
+
+  "setguildicon": {
+    "Command": "setservericon ssi",
+    "Description": "Set this server's icon.",
+    "Remarks": [
+      "[prefix]ssr https://i.imgur.com/SrRA0Bp.png"
+    ]
+  },
+
+  "createtextchannel": {
+    "Command": "createtextchannel ctch",
+    "Description": "Create a text channel.",
+    "Remarks": [
+      "[prefix]ctch music"
+    ]
+  },
+
+  "deletetextchannel": {
+    "Command": "deletetextchannel dtch",
+    "Description": "Delete a text channel.",
+    "Remarks": [
+      "[prefix]dtch music"
+    ]
+  },
+
+  "renametextchannel": {
+    "Command": "renametextchannel rntch",
+    "Description": "Rename a text channel. Separate the old name from the new one with '->'.",
+    "Remarks": [
+      "[prefix]rntch media -> music"
+    ]
+  },
+
+  "channeltopic": {
+    "Command": "channeltopic ct",
+    "Description": "Show the current channel's topic.",
+    "Remarks": [
+      "[prefix]ct"
+    ]
+  },
+
+  "setchanneltopic": {
+    "Command": "setchanneltopic sct",
+    "Description": "Set this channel's topic.",
+    "Remarks": [
+      "[prefix]sct topic"
+    ]
+  },
+
+  "setnsfwchannel": {
+    "Command": "setnsfwchannel snsfwch",
+    "Description": "Toggle this channel or another channel as NSFW.",
+    "Remarks": [
+      "[prefix]snsfwch",
+      "[prefix]snsfwch nsfw"
+    ]
+  },
+
+  "createvoicechannel": {
+    "Command": "createvoicechannel cvch",
+    "Description": "Create a voice channel.",
+    "Remarks": [
+      "[prefix]cvch Music"
+    ]
+  },
+
+  "deletevoicechannel": {
+    "Command": "deletevoicechannel dvch",
+    "Description": "Delete a voice channel.",
+    "Remarks": [
+      "[prefix]dvch Music"
+    ]
+  },
+
+  "renamevoicechannel": {
+    "Command": "renamevoicechannel rnvch",
+    "Description": "Rename a voice channel. Separate the old name from the new one with '->'.",
+    "Remarks": [
+      "[prefix]rnvch Media -> Music"
+    ]
+  },
+
+  "warning": {
+    "Command": "warning warn",
+    "Description": "Warn an user. Also, you can specify a reason.",
+    "Remarks": [
+      "[prefix]warn @User",
+      "[prefix]warn @User Rule violated..."
+    ]
+  },
+
+  "warninglist": {
+    "Command": "warninglist warnlist",
+    "Description": "Show a list with all warned users.",
+    "Remarks": [
+      "[prefix]warnlist"
+    ]
+  },
+
+  "warninglog": {
+    "Command": "warninglog warnlog",
+    "Description": "Show all warnings for an user.",
+    "Remarks": [
+      "[prefix]warnlog @User"
+    ]
+  },
+
+  "warningclear": {
+    "Command": "warnclear clearwarn",
+    "Description": "Clear an warning from an user. Type `all` to clear all warnings.",
+    "Remarks": [
+      "[prefix]warnclear @User 1",
+      "[prefix]warnclear @User all"
+    ]
+  },
+
+  "warningpunishment": {
+    "Command": "warnpunishment warnpunish",
+    "Description": "Set the number of warnings (maximum 10) for an user to be punished and the punishment method (mute, kick, ban), or 0 to disable the punishment. Provide no arguments to show the current punishment method.",
+    "Remarks": [
+      "[prefix]warnpunish 0",
+      "[prefix]warnpunish 3 kick"
+    ]
+  },
+
+  "leaveguild": {
+    "Command": "leaveguild leaveserver",
+    "Description": "Mek me to leave a guild/server.",
+    "Remarks": [
+      "[prefix]leaveguild 381975648979124225"
+    ]
+  },
+
+  "update": {
+    "Command": "update restart",
+    "Description": "Shut down the application. If the option to update the project is set on linux it will update and start the application.",
+    "Remarks": [
+      "[prefix]update"
+    ]
+  },
+
+  "send": {
+    "Command": "send",
+    "Description": "Send a message to an user <u:user-id> or to a channel from a server <c:channel-id>. Embed is supported.",
+    "Remarks": [
+      "[prefix]send u:327927038360944640 message",
+      "[prefix]send c:381975649428176907 message"
+    ]
+  },
+
+  "edit": {
+    "Command": "edit",
+    "Description": "Edit a message of mine in a server <channel-id|message-id>. Embed is supported.",
+    "Remarks": [
+      "[prefix]edit 416511999837732864|419897542508281867 message"
+    ]
+  },
+
+  "votes": {
+    "Command": "votes",
+    "Description": "Show a list with voters within the last 12 hours from Discord Bots List.",
+    "Remarks": [
+      "[prefix]votes"
+    ]
+  },
+
+  "finduser": {
+    "Command": "finduser",
+    "Description": "Search an user from Discord and show its info.",
+    "Remarks": [
+      "[prefix]finduser 327927038360944640"
+    ]
+  },
+
+  "evaluate": {
+    "Command": "evaluate eval",
+    "Description": "Evaluate a C# block code.",
+    "Remarks": [
+      "[prefix]eval code..."
+    ]
+  },
+
+  "executesql": {
+    "Command": "executesql execsql",
+    "Description": "Execute a SQL query.",
+    "Remarks": [
+      "[prefix]execsql UPDATE table SET column WHERE condition..."
+    ]
+  },
+
+  "downloadusers": {
+    "Command": "downloadusers",
+    "Description": "Download all users from a guild",
+    "Remarks": [
+      "[prefix]downloadusers",
+      "[prefix]downloadusers 416492045859946507"
+    ]
+  },
+
+  "activity": {
+    "Command": "activity",
+    "Description": "Sets my activity to `Playing`, `Listening to`, `Watching` or `Streaming`",
+    "Remarks": [
+      "[prefix]activity playing r!h for help",
+      "[prefix]activity streaming twitch https://www.twitch.tv/"
+    ]
+  },
+
+  "activityrotate": {
+    "Command": "activityrotate",
+    "Description": "Sets my activity rotation.",
+    "Remarks": [
+      "[prefix]activityrotate 30 playing r!h for help\nwatching anime"
+    ]
+  },
+
+  "status": {
+    "Command": "status",
+    "Description": "Sets my status to Online, Idle/AFK, DnD or Invisible`",
+    "Remarks": [
+      "[prefix]status online"
+    ]
+  },
+
+  "setusername": {
+    "Command": "setusername",
+    "Description": "Set my username. Be careful, it can be changed twice per hour.",
+    "Remarks": [
+      "[prefix]setusername Rias"
+    ]
+  },
+
+  "setavatar": {
+    "Command": "setavatar setpfp",
+    "Description": "Set my profile picture/avatar. Be careful, it can be changed twice per hour.",
+    "Remarks": [
+      "[prefix]setavatar https://i.imgur.com/ZW96TT6.jpg"
+    ]
+  },
+
+  "delete": {
+    "Command": "delete",
+    "Description": "Delete an user from the database. The currency, global xp, waifus and profile settings will be erased.",
+    "Remarks": [
+      "[prefix]delete 327927038360944640"
+    ]
+  },
+
+  "db": {
+    "Command": "db",
+    "Description": "Show details about an user from the database.",
+    "Remarks": [
+      "[prefix]db 327927038360944640"
+    ]
+  },
+
+  "blacklist": {
+    "Command": "blacklist",
+    "Description": "Add an user to the blacklist. It will cannot generate global xp and will cannot receive [currency].",
+    "Remarks": [
+      "[prefix]blacklist 327927038360944640"
+    ]
+  },
+
+  "removeblacklist": {
+    "Command": "removeblacklist",
+    "Description": "Remove an user from the blacklist. It will can generate global xp and will can receive [currency].",
+    "Remarks": [
+      "[prefix]removeblacklist 327927038360944640"
+    ]
+  },
+
+  "botban": {
+    "Command": "botban",
+    "Description": "Ban an user from using me. It will also be added to the blacklist.",
+    "Remarks": [
+      "[prefix]botban 327927038360944640"
+    ]
+  },
+
+  "removebotban": {
+    "Command": "removebotban",
+    "Description": "Unban an user, allow it to use me. It will not be removed from the blacklist (if it is).",
+    "Remarks": [
+      "[prefix]removebotban 327927038360944640"
+    ]
+  },
+
+  "event": {
+    "Command": "event",
+    "Description": "Start the heart event to win [currency].\nParameters: timeout (seconds), reward, message.",
+    "Remarks": [
+      "[prefix]event timeout reward message"
+    ]
+  },
+
+  "stopevent": {
+    "Command": "stopevent",
+    "Description": "Stop any event that is running.",
+    "Remarks": [
+      "[prefix]stopevent"
+    ]
+  },
+
+  "deletecommandmessage": {
+    "Command": "deletecommandmessage delcmdmsg",
+    "Description": "Toggle deletion of the user's message that triggered the command.",
+    "Remarks": [
+      "[prefix]delcmdmsg"
+    ]
+  },
+
+  "wheel": {
+    "Command": "wheel",
+    "Description": "Bet on wheel. You can win up to 2x of the bet.",
+    "Remarks": [
+      "[prefix]wheel 100"
+    ]
+  },
+
+  "reward": {
+    "Command": "reward",
+    "Description": "Reward an user with some amount of [currency].",
+    "Remarks": [
+      "[prefix]reward 100 @User"
+    ]
+  },
+
+  "take": {
+    "Command": "take",
+    "Description": "Take some amount of [currency] from an user.",
+    "Remarks": [
+      "[prefix]take 100 @User"
+    ]
+  },
+
+  "cash": {
+    "Command": "$",
+    "Description": "Check the currency you have or for an user.",
+    "Remarks": [
+      "[prefix]$",
+      "[prefix]$ @User"
+    ]
+  },
+
+  "leaderboard": {
+    "Command": "leaderboard lb",
+    "Description": "Show a list with [currency] of users.",
+    "Remarks": [
+      "[prefix]lb"
+    ]
+  },
+
+  "daily": {
+    "Command": "daily dailies",
+    "Description": "Get your daily [currency].",
+    "Remarks": [
+      "[prefix]daily"
+    ]
+  },
+
+  "blackjack": {
+    "Command": "blackjack bj",
+    "Description": "Play a game of blackjack. Minimum bet 5[currency], maximum bet 5000[currency].\n\nOptions:\n- hit(🎴) - draw a card from the deck\n- stand(🤚) - stand pat with your cards\n- split(↔) - split your hand in two if you have a pair\n\nThe game is played with 4 decks.",
+    "Remarks": [
+      "[prefix]bj 100",
+      "[prefix]bj resume (resume the blackjack session in the current channel)",
+      "[prefix]bj stop (surrender, you will lose the bet)"
+    ]
+  },
+
+  "rps": {
+    "Command": "rps",
+    "Description": "Play a game of rock-paper-scissors.",
+    "Remarks": [
+      "[prefix]rps rock"
+    ]
+  },
+
+  "help": {
+    "Command": "help h",
+    "Description": "Show a help info for a single command, or DMs you if no parameters are specified.",
+    "Remarks": [
+      "[prefix]h",
+      "[prefix]h anime"
+    ]
+  },
+
+  "modules": {
+    "Command": "modules mdls",
+    "Description": "Show a list with all modules.",
+    "Remarks": [
+      "[prefix]modules"
+    ]
+  },
+
+  "commands": {
+    "Command": "commands cmds",
+    "Description": "Show a list with all commands of a module.",
+    "Remarks": [
+      "[prefix]commands Reactions"
+    ]
+  },
+
+  "allcommands": {
+    "Command": "allcommands allcmds",
+    "Description": "Show a list with all commands.",
+    "Remarks": [
+      "[prefix]allcmds"
+    ]
+  },
+
+  "hentai": {
+    "Command": "hentai",
+    "Description": "Shows a hentai image. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]hentai",
+      "[prefix]hentai yuri uncensored",
+      "[prefix]hentai Rias_Gremory"
+    ]
+  },
+
+  "danbooru": {
+    "Command": "danbooru",
+    "Description": "Shows a hentai image from Danbooru. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]danbooru",
+      "[prefix]danbooru yuri"
+    ]
+  },
+
+  "konachan": {
+    "Command": "konachan",
+    "Description": "Shows a hentai image from Konachan. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]konachan",
+      "[prefix]konachan yuri"
+    ]
+  },
+
+  "yandere": {
+    "Command": "yandere",
+    "Description": "Shows a hentai image from Yande.re. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]yandere",
+      "[prefix]yandere yuri"
+    ]
+  },
+
+  "gelbooru": {
+    "Command": "gelbooru",
+    "Description": "Shows a hentai image from Gelbooru. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]gelbooru",
+      "[prefix]gelbooru yuri"
+    ]
+  },
+
+  "hentaiplus": {
+    "Command": "hentai+ hentaiplus",
+    "Description": "Show multiple hentai images from Danbooru, Konachan, Yandere and Gelbooru. Multiple tags allowed, separate them by space. A full tag may contains underscores.",
+    "Remarks": [
+      "[prefix]hentai+",
+      "[prefix]hentai+ yuri uncensored",
+      "[prefix]hentai+ Highschool_Dxd"
+    ]
+  },
+
+  "profile": {
+    "Command": "profile",
+    "Description": "Show your profile or for an user.",
+    "Remarks": [
+      "[prefix]profile",
+      "[prefix]profile @User"
+
+    ]
+  },
+
+  "backgroundimage": {
+    "Command": "backgroundimage bgimg",
+    "Description": "Set the profile's background image. Only https. Direct image links, png, jpg or jpeg allowed. Price: 1000 [currency]. For better results, resize the image to 500x300. NSFW images are not allowed, if someone uses, report them to the support server and they will be banned.",
+    "Remarks": [
+      "[prefix]bgimg https://i.imgur.com/pQAwZJ3.png"
+    ]
+  },
+
+  "backgrounddim": {
+    "Command": "backgrounddim bgdim",
+    "Description": "Set the profile's background dim. Default is 50%.",
+    "Remarks": [
+      "[prefix]bgdim 50"
+    ]
+  },
+
+  "biography": {
+    "Command": "biography bio",
+    "Description": "Set the profile's bio.",
+    "Remarks": [
+      "[prefix]bio Rias is my waifu."
+    ]
+  },
+
+  "pat": {
+    "Command": "pat pet",
+    "Description": "Pat an user <3.",
+    "Remarks": [
+      "[prefix]pat @User",
+      "[prefix]pat Username"
+    ]
+  },
+
+  "hug": {
+    "Command": "hug",
+    "Description": "Hug an user <3.",
+    "Remarks": [
+      "[prefix]hug @User",
+      "[prefix]hug Username"
+    ]
+  },
+
+  "kiss": {
+    "Command": "kiss",
+    "Description": "Kiss an user :heart:.",
+    "Remarks": [
+      "[prefix]kiss @User",
+      "[prefix]kiss Username"
+    ]
+  },
+
+  "lick": {
+    "Command": "lick",
+    "Description": "Lick an user, lewd.",
+    "Remarks": [
+      "[prefix]lick @User",
+      "[prefix]lick Username"
+    ]
+  },
+
+  "cuddle": {
+    "Command": "cuddle",
+    "Description": "Cuddle an user.",
+    "Remarks": [
+      "[prefix]cuddle @User",
+      "[prefix]cuddle Username"
+    ]
+  },
+
+  "bite": {
+    "Command": "bite",
+    "Description": "Bite an user.",
+    "Remarks": [
+      "[prefix]bite @User",
+      "[prefix]bite Username"
+    ]
+  },
+
+  "slap": {
+    "Command": "slap",
+    "Description": "Slap an user.",
+    "Remarks": [
+      "[prefix]slap @User",
+      "[prefix]slap Username"
+    ]
+  },
+
+  "cry": {
+    "Command": "cry crying",
+    "Description": "If you cry ;-;",
+    "Remarks": [
+      "[prefix]cry"
+    ]
+  },
+
+  "grope": {
+    "Command": "grope",
+    "Description": "Grope an user.",
+    "Remarks": [
+      "[prefix]grope @User",
+      "[prefix]grope Username"
+    ]
+  },
+
+  "anime": {
+    "Command": "anime",
+    "Description": "Shows info for an anime from AniList.",
+    "Remarks": [
+      "[prefix]anime High School DxD"
+    ]
+  },
+
+  "manga": {
+    "Command": "manga",
+    "Description": "Shows info for a manga from AniList.",
+    "Remarks": [
+      "[prefix]manga High School DxD"
+    ]
+  },
+
+  "character": {
+    "Command": "character",
+    "Description": "Shows info for a character from AniList.",
+    "Remarks": [
+      "[prefix]character Rias Gremory",
+      "[prefix]character 50389"
+    ]
+  },
+
+  "animelist": {
+    "Command": "animelist anilist",
+    "Description": "Shows a list with anime from AniList.",
+    "Remarks": [
+      "[prefix]anilist High School DxD"
+    ]
+  },
+
+  "mangalist": {
+    "Command": "mangalist",
+    "Description": "Shows a list with manga from AniList.",
+    "Remarks": [
+      "[prefix]anilist High School DxD"
+    ]
+  },
+
+  "characters": {
+    "Command": "characters",
+    "Description": "Shows a list with characters and their IDs from AniList.",
+    "Remarks": [
+      "[prefix]characters Rias"
+    ]
+  },
+
+  "neko": {
+    "Command": "neko",
+    "Description": "Shows a neko girl image.",
+    "Remarks": [
+      "[prefix]neko"
+    ]
+  },
+
+  "kitsune": {
+    "Command": "kitsune",
+    "Description": "Shows a kitsune girl image.",
+    "Remarks": [
+      "[prefix]kitsune"
+    ]
+  },
+
+  "osu": {
+    "Command": "osu",
+    "Description": "Shows osu!standard stats for an osu player.",
+    "Remarks": [
+      "[prefix]osu Cookiezi"
+    ]
+  },
+
+  "taiko": {
+    "Command": "taiko",
+    "Description": "Shows osu!taiko stats for an osu player.",
+    "Remarks": [
+      "[prefix]taiko _yu68"
+    ]
+  },
+
+  "ctb": {
+    "Command": "ctb",
+    "Description": "Shows osu!ctb stats for an osu player.",
+    "Remarks": [
+      "[prefix]ctb Motion"
+    ]
+  },
+
+  "mania": {
+    "Command": "mania",
+    "Description": "Shows osu!mania stats for an osu player.",
+    "Remarks": [
+      "[prefix]mania AscensionDTWhen"
+    ]
+  },
+
+  "wikipedia": {
+    "Command": "wikipedia wiki",
+    "Description": "Search on wikipedia.",
+    "Remarks": [
+      "[prefix]wiki anime"
+    ]
+  },
+
+  "urbandictionary": {
+    "Command": "urbandictionary ud",
+    "Description": "Search on urban dictionary. You can provide a page also.",
+    "Remarks": [
+      "[prefix]ud waifu",
+      "[prefix]ud 2 waifu"
+    ]
+  },
+
+  "prefix": {
+    "Command": "prefix",
+    "Description": "Set the prefix on this server (Requires **Administrator**). Provide no arguments to show the current server's prefix.",
+    "Remarks": [
+      "[prefix]prefix",
+      "[prefix]prefix r!"
+    ]
+  },
+
+  "invite": {
+    "Command": "invite",
+    "Description": "Invite me to your server.",
+    "Remarks": [
+      "[prefix]invite"
+    ]
+  },
+
+  "donate": {
+    "Command": "donate",
+    "Description": "Support this project on Patreon.",
+    "Remarks": [
+      "[prefix]donate"
+    ]
+  },
+
+  "calculator": {
+    "Command": "calculator calc",
+    "Description": "Calculate a math expression.",
+    "Remarks": [
+      "[prefix]calc 2+2",
+      "[prefix]calc sqrt(2)"
+    ]
+  },
+
+  "calcops": {
+    "Command": "calcops",
+    "Description": "Shows all expression options for `calc` command.",
+    "Remarks": [
+      "[prefix]calcops"
+    ]
+  },
+
+  "stats": {
+    "Command": "stats",
+    "Description": "Shows my stats.",
+    "Remarks": [
+      "[prefix]stats"
+    ]
+  },
+
+  "userinfo": {
+    "Command": "userinfo uinfo",
+    "Description": "Shows the info for an user. Provide no arguments to show your info.",
+    "Remarks": [
+      "[prefix]uinfo",
+      "[prefix]uinfo @User"
+    ]
+  },
+
+  "serverinfo": {
+    "Command": "serverinfo sinfo",
+    "Description": "Shows the info for this server.",
+    "Remarks": [
+      "[prefix]sinfo"
+    ]
+  },
+
+  "shardsinfo": {
+    "Command": "shardsinfo shinfo",
+    "Description": "Shows the connection state of all shards.",
+    "Remarks": [
+      "[prefix]shinfo"
+    ]
+  },
+
+  "useravatar": {
+    "Command": "useravatar uav avatar av",
+    "Description": "Shows the avatar for an user. Provide no arguments to show your avatar.",
+    "Remarks": [
+      "[prefix]uav",
+      "[prefix]uav @User"
+    ]
+  },
+
+  "servericon": {
+    "Command": "servericon sic",
+    "Description": "Shows the icon of this server.",
+    "Remarks": [
+      "[prefix]sic"
+    ]
+  },
+
+  "whoisplaying": {
+    "Command": "whoisplaying whosplaying",
+    "Description": "Shows a list with all users from the server that play a game.",
+    "Remarks": [
+      "[prefix]whoisplaying osu!"
+    ]
+  },
+
+  "choose": {
+    "Command": "choose",
+    "Description": "I will choose an item from a list. Separators allowed: `,`, `|`, `;`",
+    "Remarks": [
+      "[prefix]choose 1, 2, 3, 4, 5",
+      "[prefix]choose Rias | Koneko | Kurumi"
+    ]
+  },
+
+  "color": {
+    "Command": "color",
+    "Description": "Generates a preview image of a hex color.",
+    "Remarks": [
+      "[prefix]color #dc143c"
+    ]
+  },
+
+  "claimwaifu": {
+    "Command": "claimwaifu",
+    "Description": "Claim your waifu from anime. The price for every waifu starts from 1000 [currency] and it's rising with each claim with 10 [currency], also it will decrease for each divorce. The character must be on AniList's database.",
+    "Remarks": [
+      "[prefix]claimwaifu Rias Gremory",
+      "[prefix]claimwaifu 50389"
+    ]
+  },
+
+  "belovedwaifu": {
+    "Command": "belovedwaifu",
+    "Description": "Make a waifu beloved. You can set only one waifu. The price is 5000 [currency]. This action is not reversible. Use the name or id.",
+    "Remarks": [
+      "[prefix]belovedwaifu Rias Gremory",
+      "[prefix]belovedwaifu 50389"
+    ]
+  },
+
+  "divorce": {
+    "Command": "divorce",
+    "Description": "Divorce from a waifu. Use the name or id.",
+    "Remarks": [
+      "[prefix]divorce Rias Gremory",
+      "[prefix]divorce 50389"
+    ]
+  },
+
+  "waifus": {
+    "Command": "waifus",
+    "Description": "Shows all your waifus or for an user.",
+    "Remarks": [
+      "[prefix]waifus"
+    ]
+  },
+
+  "belovedwaifuavatar": {
+    "Command": "belovedwaifuavatar bwa",
+    "Description": "Set to your beloved waifu a new avatar. Only https. Direct image links, png, jpg or jpeg allowed. For better results, resize the image to 100x155.",
+    "Remarks": [
+      "[prefix]bwa https://i.imgur.com/YDTpwMj.jpg"
+    ]
+  },
+
+  "createwaifu": {
+    "Command": "createwaifu",
+    "Description": "Create your own waifu. Put a direct link link and a name. The price is 10000 [currency]. She will have the beloved status automatically.",
+    "Remarks": [
+      "[prefix]createwaifu https://i.imgur.com/RFpeSOe.jpg Rias Gremory"
+    ]
+  },
+
+  "xp": {
+    "Command": "xp",
+    "Description": "Shows your guild level and xp, global level and xp, or for an user.",
+    "Remarks": [
+      "[prefix]xp",
+      "[prefix]xp @User"
+    ]
+  },
+
+  "xpleaderboard": {
+    "Command": "xpleaderboard xplb",
+    "Description": "Shows the global xp leaderboard.",
+    "Remarks": [
+      "[prefix]xplb",
+      "[prefix]xplb 5"
+    ]
+  },
+
+  "guildxpleaderboard": {
+    "Command": "serverxplb sxplb",
+    "Description": "Shows the server xp leaderboard.",
+    "Remarks": [
+      "[prefix]sxplb",
+      "[prefix]sxplb 5"
+    ]
+  },
+
+  "xpnotify": {
+    "Command": "xpnotify xpn",
+    "Description": "Enable or disable the server xp notification.",
+    "Remarks": [
+      "[prefix]xpn"
+    ]
+  },
+
+  "leveluprolereward": {
+    "Command": "leveluprolereward lurr",
+    "Description": "Add a role in the level up role reward list. When an user reaches the level it will be rewarded with the role. To remove a role from the list provide no role for the respective level.",
+    "Remarks": [
+      "[prefix]lurr 5 Active",
+      "[prefix]lurr 5"
+    ]
+  },
+
+  "leveluprolerewards": {
+    "Command": "leveluprolerewards lurrs",
+    "Description": "Shows all level up role rewards for this server.",
+    "Remarks": [
+      "[prefix]lurrs"
+    ]
+  },
+
+  "resetguildexperience": {
+    "Command": "resetserverxp rsxp",
+    "Description": "Resets the xp leaderboard for this server.",
+    "Remarks": [
+      "[prefix]rsxp"
+    ]
+  },
+
+  "removeglobalexperience": {
+    "Command": "removeglobalxp rgxp",
+    "Description": "Remove global xp from an user.",
+    "Remarks": [
+      "[prefix]rgxp 100 @User",
+      "[prefix]rgxp 100 327927038360944640"
+    ]
+  },
+
+  "setgloballevel": {
+    "Command": "setgloballevel sglvl",
+    "Description": "Set the global level for an user.",
+    "Remarks": [
+      "[prefix]sglvl 3 @User",
+      "[prefix]sglvl 3 327927038360944640"
+    ]
+  },
+
+  "play": {
+    "Command": "play",
+    "Description": "1. Play a track. Automatically search from YouTube using keywords or provide a link.\n2. Provide a youtube playlist link to create a playlist.\nI will auto-join to the voice channel.",
+    "Remarks": [
+      "[prefix]play EDM"
+    ]
+  },
+
+  "leave": {
+    "Command": "leave stop destroy",
+    "Description": "Stops the music playback and I leave the voice channel.",
+    "Remarks": [
+      "[prefix]leave"
+    ]
+  },
+
+  "pause": {
+    "Command": "pause",
+    "Description": "Pauses the current track.",
+    "Remarks": [
+      "[prefix]pause"
+    ]
+  },
+
+  "resume": {
+    "Command": "resume",
+    "Description": "Resumes the current track.",
+    "Remarks": [
+      "[prefix]resume"
+    ]
+  },
+
+  "queue": {
+    "Command": "queue playlist",
+    "Description": "Shows the music player's queue.",
+    "Remarks": [
+      "[prefix]queue"
+    ]
+  },
+
+  "nowplaying": {
+    "Command": "nowplaying np",
+    "Description": "Shows the current played track.",
+    "Remarks": [
+      "[prefix]np"
+    ]
+  },
+
+  "skip": {
+    "Command": "skip next",
+    "Description": "Skips to the next track.",
+    "Remarks": [
+      "[prefix]skip"
+    ]
+  },
+
+  "skipto": {
+    "Command": "skipto",
+    "Description": "Skips to a track in the queue by an index or words contained in the track's title.",
+    "Remarks": [
+      "[prefix]skipto 10",
+      "[prefix]skipto title"
+    ]
+  },
+
+  "seek": {
+    "Command": "seek",
+    "Description": "Seeks to a specific time in the current track. The format is hms",
+    "Remarks": [
+      "[prefix]seek 5m30s"
+    ]
+  },
+
+  "replay": {
+    "Command": "replay",
+    "Description": "Replay the current song.",
+    "Remarks": [
+      "[prefix]replay"
+    ]
+  },
+
+  "volume": {
+    "Command": "volume vol",
+    "Description": "Sets the volume of music player or shows the current volume.",
+    "Remarks": [
+      "[prefix]vol 100",
+      "[prefix]vol"
+    ]
+  },
+
+  "shuffle": {
+    "Command": "shuffle",
+    "Description": "Shuffles the current queue.",
+    "Remarks": [
+      "[prefix]shuffle"
+    ]
+  },
+
+  "clear": {
+    "Command": "clear",
+    "Description": "Clears the current queue.",
+    "Remarks": [
+      "[prefix]clear"
+    ]
+  },
+
+  "remove": {
+    "Command": "remove",
+    "Description": "Removes a song by name or id. The name doesn't need to be complete.",
+    "Remarks": [
+      "[prefix]remove song",
+      "[prefix]remove 1"
+    ]
+  },
+
+  "repeat": {
+    "Command": "repeat",
+    "Description": "Toggles repeating of the current song.",
+    "Remarks": [
+      "[prefix]repeat"
+    ]
+  },
+
+  "ping": {
+    "Command": "ping",
+    "Description": "Check the ping.",
+    "Remarks": [
+      "[prefix]ping"
+    ]
+  }
+}

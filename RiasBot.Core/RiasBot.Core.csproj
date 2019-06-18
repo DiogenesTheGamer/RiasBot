@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <LangVersion>7.3</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NoWarn>NU1701</NoWarn>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="CoreCLR-NCalc" Version="2.2.51" />
+      <PackageReference Include="Discord.Net" Version="2.2.0-dev-20190612.2" />
+      <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.9.0.2" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.11.0-beta1-final" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="12.0.1-beta1" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Victoria\Victoria.csproj" />
+    </ItemGroup>
+
+</Project>
