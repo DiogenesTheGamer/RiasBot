@@ -18,25 +18,27 @@ namespace RiasBot.Services
         private readonly DiscordShardedClient _client;
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
+        private readonly LavaShardClient _lavaShardClient;
+        private readonly LoggingService _loggingService;
 
         public Timer DblTimer { get; }
 
         private Timer _activityTimer;
         private string[] _activities;
         private int _activityCount;
+        
+        private bool _allShardsDoneConnection;
+        private int _shardsConnected;
+        private int _recommendedShardCount;
 
-        public BotService(DiscordShardedClient client, IBotCredentials creds, DbService db, LavaShardClient lavaShardClient)
+        public BotService(DiscordShardedClient client, IBotCredentials creds, DbService db, LoggingService loggingService,
+            LavaShardClient lavaShardClient)
         {
             _client = client;
             _creds = creds;
             _db = db;
-
-            _ = Task.Run(async () => await lavaShardClient.StartAsync(client, new Configuration
-            {
-                Host = _creds.LavalinkConfig.Host,
-                Port = _creds.LavalinkConfig.Port,
-                Password = _creds.LavalinkConfig.Password
-            }));
+            _lavaShardClient = lavaShardClient;
+            _loggingService = loggingService;
 
             _client.UserJoined += OnUserJoinedAsync;
             _client.UserLeft += OnUserLeftAsync;
@@ -162,6 +164,31 @@ namespace RiasBot.Services
 
             //TODO: Add check the mute role (rias-mute) when the user leaves the guild
             //TODO: reduce the nesting
+        }
+        
+        private async Task ShardConnected(DiscordSocketClient client)
+        {
+            _loggingService.Ready = true;
+            if (!_allShardsDoneConnection)
+                _shardsConnected++;
+
+            if (_recommendedShardCount == 0)
+                _recommendedShardCount = await _client.GetRecommendedShardCountAsync().ConfigureAwait(false);
+
+            if (_shardsConnected == _recommendedShardCount && !_allShardsDoneConnection)
+            {
+                await _client.GetGuild(_creds.OwnerServerId).DownloadUsersAsync().ConfigureAwait(false);
+
+                await _lavaShardClient.StartAsync(_client, new Configuration
+                {
+                    Host = _creds.LavalinkConfig.Host,
+                    Port = _creds.LavalinkConfig.Port,
+                    Password = _creds.LavalinkConfig.Password
+                });
+                
+                Console.WriteLine($"{DateTime.UtcNow:MMM dd hh:mm:ss} Lavalink started!");
+                _allShardsDoneConnection = true;
+            }
         }
 
         public async Task AddAssignableRoleAsync(GuildConfig guildDb, IGuildUser user, IGuildUser currentUser)
