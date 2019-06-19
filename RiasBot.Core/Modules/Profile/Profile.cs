@@ -45,8 +45,9 @@ namespace RiasBot.Modules.Utility
                             await Context.Channel.SendFileAsync(img, $"{user.Id}_profile.png");
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     // ignored
                 }
                 typing.Dispose();

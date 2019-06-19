@@ -282,12 +282,15 @@ namespace RiasBot.Modules.Music.Services
             }
         }
 
-        public async Task StopAsync(IGuild guild)
+        public async Task StopAsync(IGuild guild, bool showMessage = true)
         {
             if (MusicPlayers.TryRemove(guild.Id, out var musicPlayer))
             {
                 var voiceChannel = musicPlayer.Player.VoiceChannel;
                 await _lavaShardClient.DisconnectAsync(voiceChannel);
+                
+                if (!showMessage)
+                    return;
                 
                 var reason = MusicExtensions.CheckOutputChannel(_client, musicPlayer.Guild, musicPlayer.Channel);
                 if (string.Equals(reason, "TRUE"))

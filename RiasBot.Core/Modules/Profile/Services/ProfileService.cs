@@ -197,9 +197,9 @@ namespace RiasBot.Modules.Profile.Services
                             };
 
                             tempBg.Resize(size);
-                            image.Draw(new DrawableComposite(0, 0, tempBg));    
+                            image.Draw(new DrawableComposite(0, 0, tempBg));
                         }
-                        
+
                     }
                     else
                     {
@@ -229,7 +229,7 @@ namespace RiasBot.Modules.Profile.Services
                                 };
                                 tempBg.Resize(size);
 
-                                image.Draw(new DrawableComposite(0, 0, tempBg));   
+                                image.Draw(new DrawableComposite(0, 0, tempBg));
                             }
                         }
                     }
@@ -257,7 +257,7 @@ namespace RiasBot.Modules.Profile.Services
                 tempAvatar.Resize(size);
                 tempAvatar.Border(2);
                 tempAvatar.BorderColor = MagickColors.White;
-                image.Draw(new DrawableComposite(30, 20, tempAvatar));   
+                image.Draw(new DrawableComposite(30, 20, tempAvatar));
             }
         }
 
@@ -279,12 +279,12 @@ namespace RiasBot.Modules.Profile.Services
             {
                 image.Draw(new DrawableComposite(120, usernameYPosition, tempUsername));
             }
-            
+
             if (string.IsNullOrEmpty(nickname)) return;
 
             using (var tempNickname = new MagickImage($"caption:{nickname}", nameSettings))
             {
-                image.Draw(new DrawableComposite(130, 60, tempNickname));   
+                image.Draw(new DrawableComposite(130, 60, tempNickname));
             }
         }
 
@@ -382,7 +382,7 @@ namespace RiasBot.Modules.Profile.Services
 
             using (var tempBioBox = new MagickImage(caption, bioBoxSettings))
             {
-                image.Draw(new DrawableComposite(152, 212, tempBioBox));   
+                image.Draw(new DrawableComposite(152, 212, tempBioBox));
             }
         }
 
@@ -441,7 +441,7 @@ namespace RiasBot.Modules.Profile.Services
 
                     var character = await _animeService.GetCharacterAsync(waifu.WaifuId.ToString());
                     waifu.WaifuImage = character.Image.Large;
-                    await Task.Run(async () => await SaveNewWaifuPicture(user, waifu));
+                    _ = Task.Run(async () => await SaveNewWaifuPicture(user, waifu));
 
                     using (var waifuStreamUpdate = await http.GetAsync(waifu.WaifuImage))
                     {
@@ -545,13 +545,13 @@ namespace RiasBot.Modules.Profile.Services
                                 };
                                 tempBelovedWaifu.Resize(size);
                                 tempBelovedWaifu.Crop(100, 155);
-                                image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));   
+                                image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));
                             }
                         }
                         else
                         {
                             addWaifuPicture = true;
-                        }   
+                        }
                     }
                 }
                 catch
@@ -576,13 +576,13 @@ namespace RiasBot.Modules.Profile.Services
                                     };
                                     tempBelovedWaifu.Resize(size);
                                     tempBelovedWaifu.Crop(100, 155);
-                                    image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));   
+                                    image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));
                                 }
                             }
                             else
                             {
                                 getWaifuPicture = true;
-                            }   
+                            }
                         }
                     }
                     catch
@@ -599,7 +599,7 @@ namespace RiasBot.Modules.Profile.Services
 
                     var character = await _animeService.GetCharacterAsync(waifu.WaifuId.ToString());
                     waifu.WaifuImage = character.Image.Large;
-                    await Task.Run(async () => await SaveNewWaifuPicture(user, waifu));
+                    _ = Task.Run(async () => await SaveNewWaifuPicture(user, waifu));
 
                     try
                     {
@@ -616,12 +616,12 @@ namespace RiasBot.Modules.Profile.Services
                                     };
                                     tempBelovedWaifu.Resize(size);
                                     tempBelovedWaifu.Crop(100, 155);
-                                    image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));    
+                                    image.Draw(new DrawableComposite(380, 125, tempBelovedWaifu));
                                 }
-                                
-                            }    
+
+                            }
                         }
-                        
+
                     }
                     catch
                     {
@@ -662,7 +662,7 @@ namespace RiasBot.Modules.Profile.Services
                     profileInfo.Bio = DefaultProfileBio;
                 }
 
-                return profileInfo;    
+                return profileInfo;
             }
         }
 
@@ -683,7 +683,7 @@ namespace RiasBot.Modules.Profile.Services
                     profileSettings.BackgroundDim = 50;
                 }
 
-                return profileSettings;    
+                return profileSettings;
             }
         }
 

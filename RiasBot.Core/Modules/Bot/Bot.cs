@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
 using RiasBot.Commons.Attributes;
 using RiasBot.Extensions;
+using RiasBot.Modules.Music.Services;
 using RiasBot.Services;
 
 namespace RiasBot.Modules.Bot
@@ -24,9 +25,10 @@ namespace RiasBot.Modules.Bot
         private readonly DbService _db;
         private readonly InteractiveService _is;
         private readonly VotesService _votesService;
+        private readonly MusicService _musicService;
 
         public Bot(DiscordShardedClient client, IServiceProvider services, DbService db,
-            IBotCredentials creds, InteractiveService interactiveService, VotesService votesService)
+            IBotCredentials creds, InteractiveService interactiveService, VotesService votesService, MusicService musicService)
         {
             _services = services;
             _db = db;
@@ -34,6 +36,7 @@ namespace RiasBot.Modules.Bot
             _client = client;
             _is = interactiveService;
             _votesService = votesService;
+            _musicService = musicService;
         }
 
         [RiasCommand][Aliases]
@@ -79,14 +82,11 @@ namespace RiasBot.Modules.Bot
         [RequireOwner]
         public async Task UpdateAsync()
         {
-            //TODO: Don't forget to stop each media player before to stop the program
-
-            var migrations = (await _db.GetDbContext().Database.GetPendingMigrationsAsync()).Count();
-            while (migrations > 0)
+            foreach (var musicPlayer in _musicService.MusicPlayers.Values)
             {
-                migrations = (await _db.GetDbContext().Database.GetPendingMigrationsAsync()).Count();
+                await _musicService.StopAsync(musicPlayer.Guild, false);
             }
-
+            
             await ReplyConfirmationAsync("update");
             Environment.Exit(0);
         }

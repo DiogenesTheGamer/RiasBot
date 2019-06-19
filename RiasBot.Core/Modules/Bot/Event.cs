@@ -9,7 +9,7 @@ namespace RiasBot.Modules.Bot
     public partial class Bot
     {
         public class Event : RiasSubmodule<EventService>
-        {                       
+        {
             [RiasCommand][Aliases]
             [Description][Usages]
             [RequireOwner]
@@ -26,12 +26,12 @@ namespace RiasBot.Modules.Bot
                     await ReplyErrorAsync("event_reward_lower", 0);
                     return;
                 }
-                
+
                 var userMessage = await Context.Channel.SendConfirmationMessageAsync(message);
 
-                await Task.Run(async () => await Service.StartHeartEventAsync(userMessage, timeout, reward));
+                _ = Task.Run(async () => await Service.StartHeartEventAsync(userMessage, timeout, reward));
             }
-            
+
             [RiasCommand][Aliases]
             [Description][Usages]
             [RequireOwner]

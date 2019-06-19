@@ -53,7 +53,7 @@ namespace RiasBot.Modules.Administration.Services
                 }
                 else
                 {
-                    await Task.Run(async () => await AddMuteRoleToChannelsAsync(role, guild));
+                    _ = Task.Run(async () => await AddMuteRoleToChannelsAsync(role, guild));
                     await user.AddRoleAsync(role);
 
                     var muteUser = userGuildDb.FirstOrDefault(y => y.UserId == user.Id);
@@ -197,11 +197,11 @@ namespace RiasBot.Modules.Administration.Services
                 }
             }
         }
-        
+
         public async Task AddMuteRoleToChannelsAsync(IRole role, IGuild guild)
         {
             var permissions = new OverwritePermissions().Modify(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, speak: PermValue.Deny);
-            
+
             var categories = await guild.GetCategoriesAsync();
             foreach (var category in categories)
             {
@@ -218,7 +218,7 @@ namespace RiasBot.Modules.Administration.Services
         private static async Task AddPermissionOverwriteAsync(IGuildChannel channel, IRole role, OverwritePermissions permissions)
         {
             var addPermissionOverwrite = false;
-            
+
             var rolePermissions = channel.GetPermissionOverwrite(role);
             if (rolePermissions != null)
             {
@@ -227,19 +227,19 @@ namespace RiasBot.Modules.Administration.Services
                     rolePermissions.Value.Modify(sendMessages: PermValue.Deny);
                     addPermissionOverwrite = true;
                 }
-                    
+
                 if (rolePermissions.Value.AddReactions != PermValue.Deny)
                 {
                     rolePermissions.Value.Modify(addReactions: PermValue.Deny);
                     addPermissionOverwrite = true;
                 }
-                
+
                 if (rolePermissions.Value.Speak != PermValue.Deny)
                 {
                     rolePermissions.Value.Modify(addReactions: PermValue.Deny);
                     addPermissionOverwrite = true;
                 }
-                    
+
                 if (addPermissionOverwrite)
                     await channel.AddPermissionOverwriteAsync(role, rolePermissions.Value);
             }
@@ -247,7 +247,7 @@ namespace RiasBot.Modules.Administration.Services
             {
                 await channel.AddPermissionOverwriteAsync(role, permissions);
             }
-                
+
             await channel.AddPermissionOverwriteAsync(role, permissions);
         }
     }

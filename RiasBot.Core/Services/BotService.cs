@@ -21,12 +21,12 @@ namespace RiasBot.Services
         private readonly LavaShardClient _lavaShardClient;
         private readonly LoggingService _loggingService;
 
-        public Timer DblTimer { get; }
+        private Timer DblTimer { get; }
 
         private Timer _activityTimer;
         private string[] _activities;
         private int _activityCount;
-        
+
         private bool _allShardsDoneConnection;
         private int _shardsConnected;
         private int _recommendedShardCount;
@@ -40,8 +40,9 @@ namespace RiasBot.Services
             _lavaShardClient = lavaShardClient;
             _loggingService = loggingService;
 
-            _client.UserJoined += OnUserJoinedAsync;
-            _client.UserLeft += OnUserLeftAsync;
+            _client.ShardConnected += ShardConnected;
+            _client.UserJoined += UserJoinedAsync;
+            _client.UserLeft += UserLeftAsync;
 
             if (!string.IsNullOrEmpty(_creds.DiscordBotsListApiKey))
             {
@@ -51,8 +52,8 @@ namespace RiasBot.Services
                 }
             }
         }
-        
-        private async Task OnUserJoinedAsync(SocketGuildUser user)
+
+        private async Task UserJoinedAsync(SocketGuildUser user)
         {
             var currentUser = user.Guild.CurrentUser;
 
@@ -117,12 +118,12 @@ namespace RiasBot.Services
                         }
                     }
                 }
-                
+
                 //TODO: reduce the nesting
             }
         }
 
-        private async Task OnUserLeftAsync(SocketGuildUser user)
+        private async Task UserLeftAsync(SocketGuildUser user)
         {
             using (var db = _db.GetDbContext())
             {
@@ -165,7 +166,7 @@ namespace RiasBot.Services
             //TODO: Add check the mute role (rias-mute) when the user leaves the guild
             //TODO: reduce the nesting
         }
-        
+
         private async Task ShardConnected(DiscordSocketClient client)
         {
             _loggingService.Ready = true;
@@ -178,17 +179,18 @@ namespace RiasBot.Services
             if (_shardsConnected == _recommendedShardCount && !_allShardsDoneConnection)
             {
                 await _client.GetGuild(_creds.OwnerServerId).DownloadUsersAsync().ConfigureAwait(false);
-
                 await _lavaShardClient.StartAsync(_client, new Configuration
                 {
                     Host = _creds.LavalinkConfig.Host,
                     Port = _creds.LavalinkConfig.Port,
                     Password = _creds.LavalinkConfig.Password
                 });
-                
+
                 Console.WriteLine($"{DateTime.UtcNow:MMM dd hh:mm:ss} Lavalink started!");
                 _allShardsDoneConnection = true;
             }
+
+            //TODO: make this better
         }
 
         public async Task AddAssignableRoleAsync(GuildConfig guildDb, IGuildUser user, IGuildUser currentUser)
@@ -240,7 +242,7 @@ namespace RiasBot.Services
             foreach (var shard in _client.Shards)
             {
                 if (shard.ConnectionState != ConnectionState.Connected) continue;
-                
+
                 switch (activityType.ToLowerInvariant())
                 {
                     case "playing":
@@ -281,8 +283,8 @@ namespace RiasBot.Services
                 //ignored
             }
         }
-        
-        public async Task DblStatsAsync()
+
+        private async Task DblStatsAsync()
         {
             try
             {
