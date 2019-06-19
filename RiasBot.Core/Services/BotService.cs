@@ -174,7 +174,7 @@ namespace RiasBot.Services
                 _shardsConnected++;
 
             if (_recommendedShardCount == 0)
-                _recommendedShardCount = await _client.GetRecommendedShardCountAsync().ConfigureAwait(false);
+                _recommendedShardCount = _client.Shards.Count;
 
             if (_shardsConnected == _recommendedShardCount && !_allShardsDoneConnection)
             {
