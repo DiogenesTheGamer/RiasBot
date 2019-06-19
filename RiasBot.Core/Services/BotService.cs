@@ -31,12 +31,12 @@ namespace RiasBot.Services
             _creds = creds;
             _db = db;
 
-            lavaShardClient.StartAsync(client, new Configuration
+            _ = Task.Run(async () => await lavaShardClient.StartAsync(client, new Configuration
             {
                 Host = _creds.LavalinkConfig.Host,
                 Port = _creds.LavalinkConfig.Port,
                 Password = _creds.LavalinkConfig.Password
-            });
+            }));
 
             _client.UserJoined += OnUserJoinedAsync;
             _client.UserLeft += OnUserLeftAsync;
