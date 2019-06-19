@@ -218,7 +218,8 @@ namespace RiasBot.Modules.Gambling
                 }
 
                 if (user.Id == Context.User.Id)
-                    await ReplyConfirmationAsync("currency_you", currency, _creds.Currency);
+                    await Context.Channel.SendConfirmationMessageAsync($"{GetText("currency_you", currency, _creds.Currency)}\n" + 
+                                                                       $"{GetText("#utility_vote_info", _creds.DblVote, _creds.Currency)}");
                 else
                     await ReplyConfirmationAsync("currency_user", user, currency, _creds.Currency);
             }
@@ -271,7 +272,8 @@ namespace RiasBot.Modules.Gambling
                         else
                         {
                             var timeLeft = dailyDb.NextDaily.Subtract(DateTime.UtcNow);
-                            await ReplyErrorAsync("daily_wait", timeLeft.FancyTimeSpanString());
+                            await Context.Channel.SendErrorMessageAsync($"{GetText("daily_wait", timeLeft.FancyTimeSpanString())}\n" + 
+                                                                               $"{GetText("#utility_vote_info_wait", _creds.DblVote, _creds.Currency)}");
                             return;
                         }
                     }
@@ -293,10 +295,9 @@ namespace RiasBot.Modules.Gambling
                     await db.SaveChangesAsync();
                 }
                 
-                await ReplyConfirmationAsync("daily_received", 100, _creds.Currency);
+                await Context.Channel.SendConfirmationMessageAsync($"{GetText("daily_received", 100, _creds.Currency)}\n" + 
+                                                                   $"{GetText("#utility_vote_info", _creds.DblVote, _creds.Currency)}");
             }
         }
     }
 }
-
-//TODO: Add vote info for currency and daily

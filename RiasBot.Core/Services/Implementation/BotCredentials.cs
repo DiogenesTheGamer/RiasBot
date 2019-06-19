@@ -24,6 +24,8 @@ namespace RiasBot.Services.Implementation
         public string Patreon { get; }
         public string Website { get; }
         public string WeebApi { get; }
+        public string DblVote { get; }
+        
         public string GoogleApiKey { get; }
         public string UrbanDictionaryApiKey { get; }
         public string PatreonAccessToken { get; }
@@ -60,6 +62,7 @@ namespace RiasBot.Services.Implementation
             Patreon = config[nameof(Patreon)];
             Website = config[nameof(Website)];
             WeebApi = config[nameof(WeebApi)];
+            DblVote = config[nameof(DblVote)];
 
             GoogleApiKey = config[nameof(GoogleApiKey)];
             UrbanDictionaryApiKey = config[nameof(UrbanDictionaryApiKey)];

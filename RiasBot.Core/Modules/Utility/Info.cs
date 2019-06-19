@@ -51,6 +51,20 @@ namespace RiasBot.Modules.Utility
                     users += ((SocketGuild)guild).MemberCount;
                 }
 
+                var playingPlayers = 0;
+                var afkPlayers = 0;
+
+                foreach (var musicPlayer in _musicService.MusicPlayers.Values)
+                {
+                    var player = musicPlayer.Player;
+                    
+                    if (player.IsPlaying && !player.IsPaused)
+                        playingPlayers++;
+                    
+                    if (musicPlayer.CurrentTrack is null || player.IsPlaying && player.IsPaused)
+                        afkPlayers++;
+                }
+
                 var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
                     .WithAuthor($"{Context.Client.CurrentUser.Username} Bot v{RiasBot.Version}", Context.Client.CurrentUser.GetRealAvatarUrl())
                     .AddField(GetText("author"), RiasBot.Author, true).AddField(GetText("bot_id"), Context.Client.CurrentUser.Id, true)
@@ -58,7 +72,8 @@ namespace RiasBot.Modules.Utility
                     .AddField(GetText("in_server"), Context.Guild?.Name ?? "-", true).AddField(GetText("commands_executed"), RiasBot.CommandsExecuted, true)
                     .AddField(GetText("uptime"), GetTimeString(RiasBot.UpTime.Elapsed), true)
                     .AddField(GetText("presence"), $"{guilds.Count} {GetText("guilds")}\n{textChannels} {GetText("text_channels")}\n" +
-                                                   $"{voiceChannels} {GetText("voice_channels")}\n{users} {GetText("#bot_users")}", true);
+                                                   $"{voiceChannels} {GetText("voice_channels")}\n{users} {GetText("#bot_users")}", true)
+                    .AddField(GetText("music"), $"{GetText("music_playing", playingPlayers)}\n{GetText("music_afk", afkPlayers)}", true);
 
                 var links = new StringBuilder();
                 const string delimiter = " • ";

@@ -19,6 +19,7 @@ namespace RiasBot.Services
         string Patreon { get; }
         string Website { get; }
         string WeebApi { get; }
+        string DblVote { get; }
 
         string GoogleApiKey { get; }
         string UrbanDictionaryApiKey { get; }

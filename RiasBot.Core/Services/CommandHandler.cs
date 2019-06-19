@@ -46,7 +46,6 @@ namespace RiasBot.Services
         private async Task MessageReceivedAsync(SocketMessage message)
         {
             if (!(message is SocketUserMessage userMessage)) return; // Ensure the message is from a user/bot
-            if (userMessage.Author.Id == _client.CurrentUser.Id) return; // Ignore self when checking commands
             if (userMessage.Author.IsBot) return; // Ignore other bots
 
             var context = new ShardedCommandContext(_client, userMessage);
