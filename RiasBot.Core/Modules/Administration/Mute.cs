@@ -26,7 +26,7 @@ namespace RiasBot.Modules.Administration
             [Usages]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.MuteMembers)]
-            [RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.MuteMembers)]
+            [RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.MuteMembers)]
             [Priority(1)]
             public async Task MuteAsync(IGuildUser user, [Remainder] string reason = null)
             {
@@ -60,7 +60,7 @@ namespace RiasBot.Modules.Administration
             [Usages]
             [RequireContext(ContextType.Guild)]
             [RequireUserPermission(GuildPermission.MuteMembers)]
-            [RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.MuteMembers)]
+            [RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageChannels | GuildPermission.MuteMembers)]
             public async Task UnMuteAsync(IGuildUser user, [Remainder]string reason = null)
             {
                 if (user.Id == Context.User.Id)
@@ -82,8 +82,8 @@ namespace RiasBot.Modules.Administration
             [Description]
             [Aliases]
             [Usages]
-            [RequireUserPermission(GuildPermission.ManageRoles)]
-            [RequireBotPermission(GuildPermission.ManageRoles)]
+            [RequireUserPermission(GuildPermission.ManageRoles | GuildPermission.ManageChannels)]
+            [RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageChannels)]
             [RequireContext(ContextType.Guild)]
             public async Task SetMuteAsync([Remainder] string name)
             {

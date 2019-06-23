@@ -139,13 +139,13 @@ namespace RiasBot.Modules.Music.Services
             }
         }
 
-        private Task ShardDisconnectedAsync(Exception ex, DiscordSocketClient client)
+        private async Task ShardDisconnectedAsync(Exception ex, DiscordSocketClient client)
         {
             foreach (var guild in client.Guilds)
             {
                 MusicPlayers.TryRemove(guild.Id, out _);
+                await StopAsync(guild);
             }
-            return Task.CompletedTask;
         }
         
         private async Task LeftGuildAsync(SocketGuild guild)
@@ -919,13 +919,16 @@ namespace RiasBot.Modules.Music.Services
 
         private async Task TrackFinishedAsync(LavaPlayer player, LavaTrack track, TrackEndReason reason)
         {
-            if (reason == TrackEndReason.Finished)
+            if (reason.ShouldPlayNext())
             {
                 if (MusicPlayers.TryGetValue(player.VoiceChannel.GuildId, out var musicPlayer))
                 {
                     await PlayNextTrackAsync(musicPlayer);
+                    return;
                 }
             }
+
+            await _log.Error($"Something went wrong on playing the next track!\n Reason: {reason}");
         }
 
         private async Task TrackStuckAsync(LavaPlayer player, LavaTrack track, long threshold)

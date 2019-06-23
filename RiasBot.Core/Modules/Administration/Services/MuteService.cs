@@ -31,7 +31,6 @@ namespace RiasBot.Modules.Administration.Services
             using (var db = _db.GetDbContext())
             {
                 var guildDb = db.Guilds.FirstOrDefault(x => x.GuildId == guild.Id);
-                var userGuildDb = db.UserGuilds.Where(x => x.GuildId == guild.Id);
 
                 IRole role;
                 if (guildDb != null)
@@ -53,6 +52,8 @@ namespace RiasBot.Modules.Administration.Services
                 }
                 else
                 {
+                    var userGuildDb = db.UserGuilds.Where(x => x.GuildId == guild.Id);
+                    
                     _ = Task.Run(async () => await AddMuteRoleToChannelsAsync(role, guild));
                     await user.AddRoleAsync(role);
 
@@ -217,38 +218,36 @@ namespace RiasBot.Modules.Administration.Services
 
         private static async Task AddPermissionOverwriteAsync(IGuildChannel channel, IRole role, OverwritePermissions permissions)
         {
-            var addPermissionOverwrite = false;
-
             var rolePermissions = channel.GetPermissionOverwrite(role);
-            if (rolePermissions != null)
-            {
-                if (rolePermissions.Value.SendMessages != PermValue.Deny)
-                {
-                    rolePermissions.Value.Modify(sendMessages: PermValue.Deny);
-                    addPermissionOverwrite = true;
-                }
 
-                if (rolePermissions.Value.AddReactions != PermValue.Deny)
-                {
-                    rolePermissions.Value.Modify(addReactions: PermValue.Deny);
-                    addPermissionOverwrite = true;
-                }
-
-                if (rolePermissions.Value.Speak != PermValue.Deny)
-                {
-                    rolePermissions.Value.Modify(addReactions: PermValue.Deny);
-                    addPermissionOverwrite = true;
-                }
-
-                if (addPermissionOverwrite)
-                    await channel.AddPermissionOverwriteAsync(role, rolePermissions.Value);
-            }
-            else
+            if (!rolePermissions.HasValue)
             {
                 await channel.AddPermissionOverwriteAsync(role, permissions);
+                return;
+            }
+            
+            var addPermissionOverwrite = false;
+
+            if (rolePermissions.Value.SendMessages != PermValue.Deny)
+            {
+                rolePermissions.Value.Modify(sendMessages: PermValue.Deny);
+                addPermissionOverwrite = true;
             }
 
-            await channel.AddPermissionOverwriteAsync(role, permissions);
+            if (rolePermissions.Value.AddReactions != PermValue.Deny)
+            {
+                rolePermissions.Value.Modify(addReactions: PermValue.Deny);
+                addPermissionOverwrite = true;
+            }
+
+            if (rolePermissions.Value.Speak != PermValue.Deny)
+            {
+                rolePermissions.Value.Modify(addReactions: PermValue.Deny);
+                addPermissionOverwrite = true;
+            }
+
+            if (addPermissionOverwrite)
+                await channel.AddPermissionOverwriteAsync(role, rolePermissions.Value);
         }
     }
 }
