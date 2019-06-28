@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using RiasBot.Commons.Attributes;
 using RiasBot.Database.Models;
+using RiasBot.Extensions;
 using Victoria;
 
 namespace RiasBot.Services
@@ -75,16 +77,10 @@ namespace RiasBot.Services
                                 var preconditions = bot.GetPermissions(channel);
                                 if (preconditions.ViewChannel && preconditions.SendMessages)
                                 {
-                                    var greetMsg = guildDb.GreetMessage;
-                                    greetMsg = greetMsg.Replace("%mention%", user.Mention);
-                                    greetMsg = greetMsg.Replace("%user%", user.ToString());
-                                    greetMsg = greetMsg.Replace("%guild%", Format.Bold(user.Guild.Name));
-                                    greetMsg = greetMsg.Replace("%server%", Format.Bold(user.Guild.Name));
-
+                                    var greetMsg = ReplacePlaceholders(user, guildDb.GreetMessage);
                                     if (Extensions.Extensions.TryParseEmbed(greetMsg, out var embed))
                                     {
                                         await channel.SendMessageAsync(embed: embed.Build());
-
                                     }
                                     else
                                     {
@@ -141,12 +137,7 @@ namespace RiasBot.Services
                                 var preconditions = bot.GetPermissions(channel);
                                 if (preconditions.ViewChannel && preconditions.SendMessages)
                                 {
-                                    var byeMsg = guildDb.ByeMessage;
-                                    byeMsg = byeMsg.Replace("%mention%", user.Mention);
-                                    byeMsg = byeMsg.Replace("%user%", user.ToString());
-                                    byeMsg = byeMsg.Replace("%guild%", Format.Bold(user.Guild.Name));
-                                    byeMsg = byeMsg.Replace("%server%", Format.Bold(user.Guild.Name));
-
+                                    var byeMsg = ReplacePlaceholders(user, guildDb.ByeMessage);
                                     if (Extensions.Extensions.TryParseEmbed(byeMsg, out var embed))
                                     {
                                         await channel.SendMessageAsync(embed: embed.Build());
@@ -166,6 +157,15 @@ namespace RiasBot.Services
             //TODO: Add check the mute role (rias-mute) when the user leaves the guild
             //TODO: reduce the nesting
         }
+
+        private string ReplacePlaceholders(SocketGuildUser user, string message) 
+            => new StringBuilder(message)
+                .Replace("%mention%", user.Mention)
+                .Replace("%user%", user.ToString())
+                .Replace("%user_id%", user.Id.ToString())
+                .Replace("%guild%", Format.Bold(user.Guild.Name))
+                .Replace("%server%", Format.Bold(user.Guild.Name))
+                .Replace("%avatar%", user.GetRealAvatarUrl()).ToString();
 
         private async Task ShardConnected(DiscordSocketClient client)
         {

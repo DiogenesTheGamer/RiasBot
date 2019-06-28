@@ -9,7 +9,7 @@
 
   "greetmessage": {
     "Command": "greetmessage greetmsg",
-    "Description": "Set the announcement message when someone joins the server.\nPlaceholders:\n`%mention%` - will mention the user who joins\n`%user%` - will write the user's username\n`%server%` or `%guild%` - will put the name of the server\nEmbeds are supported, json form.",
+    "Description": "Set the announcement message when someone joins the server.\nPlaceholders:\n`%mention%` - will mention the user who joined the server\n`%user%` - will write the user's username\n`%server%` or `%guild%` - will put the name of the server\nEmbeds are supported, json form.",
     "Remarks": [
       "[prefix]greetmsg Welcome %mention% to..."
     ]
