@@ -113,35 +113,37 @@ namespace RiasBot.Modules.Utility
                         return;
                     }
 
-                    var db = _db.GetDbContext();
-                    var userDb = db.Users.FirstOrDefault(x => x.UserId == Context.User.Id);
-                    var profileDb = db.Profile.FirstOrDefault(x => x.UserId == Context.User.Id);
-                    if (userDb != null)
+                    using (var db = _db.GetDbContext())
                     {
-                        if (userDb.Currency >= 1000)
+                        var userDb = db.Users.FirstOrDefault(x => x.UserId == Context.User.Id);
+                        var profileDb = db.Profile.FirstOrDefault(x => x.UserId == Context.User.Id);
+                        if (userDb != null)
                         {
-                            if (profileDb != null)
+                            if (userDb.Currency >= 1000)
                             {
-                                profileDb.BackgroundUrl = url;
+                                if (profileDb != null)
+                                {
+                                    profileDb.BackgroundUrl = url;
+                                }
+                                else
+                                {
+                                    var profile = new DBModels.Profile { UserId = Context.User.Id, BackgroundUrl = url, BackgroundDim = 50 };
+                                    await db.AddAsync(profile);
+                                }
+                                userDb.Currency -= 1000;
+
+                                await db.SaveChangesAsync();
+                                await ReplyConfirmationAsync("background_set");
                             }
                             else
                             {
-                                var profile = new DBModels.Profile { UserId = Context.User.Id, BackgroundUrl = url, BackgroundDim = 50 };
-                                await db.AddAsync(profile);
+                                await ReplyErrorAsync("#gambling_currency_not_enough", _creds.Currency);
                             }
-                            userDb.Currency -= 1000;
-
-                            await db.SaveChangesAsync();
-                            await ReplyConfirmationAsync("background_set");
                         }
                         else
                         {
                             await ReplyErrorAsync("#gambling_currency_not_enough", _creds.Currency);
                         }
-                    }
-                    else
-                    {
-                        await ReplyErrorAsync("#gambling_currency_not_enough", _creds.Currency);
                     }
                 }
             }

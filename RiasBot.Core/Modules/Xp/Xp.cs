@@ -258,51 +258,53 @@ namespace RiasBot.Modules.Xp
         [RequireContext(ContextType.Guild)]
         public async Task LevelUpRoleRewardsAsync()
         {
-            var db = _db.GetDbContext();
-            var xpRolesSystemDb = db.XpRolesSystem.Where(x => x.GuildId == Context.Guild.Id);
-
-            if (!xpRolesSystemDb.Any())
+            using (var db = _db.GetDbContext())
             {
-                await ReplyErrorAsync("no_role_rewards");
-                return;
-            }
+                var xpRolesSystemDb = db.XpRolesSystem.Where(x => x.GuildId == Context.Guild.Id);
 
-            var saveDb = false;
-
-            var lurrs = new List<string>();
-            foreach (var xpRole in xpRolesSystemDb.OrderBy(r => r.Level))
-            {
-                var role = Context.Guild.GetRole(xpRole.RoleId);
-                if (role != null)
+                if (!xpRolesSystemDb.Any())
                 {
-                    lurrs.Add($"{GetText("level")} {xpRole.Level}: {role.Name}");
+                    await ReplyErrorAsync("no_role_rewards");
+                    return;
                 }
-                else
-                {
-                    db.Remove(xpRole);
-                    saveDb = true;
-                }
-            }
 
-            if (saveDb)
-                await db.SaveChangesAsync();
+                var saveDb = false;
+
+                var lurrs = new List<string>();
+                foreach (var xpRole in xpRolesSystemDb.OrderBy(r => r.Level))
+                {
+                    var role = Context.Guild.GetRole(xpRole.RoleId);
+                    if (role != null)
+                    {
+                        lurrs.Add($"{GetText("level")} {xpRole.Level}: {role.Name}");
+                    }
+                    else
+                    {
+                        db.Remove(xpRole);
+                        saveDb = true;
+                    }
+                }
+
+                if (saveDb)
+                    await db.SaveChangesAsync();
             
-            var pager = new PaginatedMessage
-            {
-                Title = GetText("role_rewards"),
-                Color = new Color(_creds.ConfirmColor),
-                Pages = lurrs,
-                Options = new PaginatedAppearanceOptions
+                var pager = new PaginatedMessage
                 {
-                    ItemsPerPage = 15,
-                    Timeout = TimeSpan.FromMinutes(1),
-                    DisplayInformationIcon = false,
-                    JumpDisplayOptions = JumpDisplayOptions.Never
-                }
+                    Title = GetText("role_rewards"),
+                    Color = new Color(_creds.ConfirmColor),
+                    Pages = lurrs,
+                    Options = new PaginatedAppearanceOptions
+                    {
+                        ItemsPerPage = 15,
+                        Timeout = TimeSpan.FromMinutes(1),
+                        DisplayInformationIcon = false,
+                        JumpDisplayOptions = JumpDisplayOptions.Never
+                    }
 
-            };
+                };
             
-            await _is.SendPaginatedMessageAsync((ShardedCommandContext)Context, pager);
+                await _is.SendPaginatedMessageAsync((ShardedCommandContext)Context, pager);
+            }
         }
 
         [RiasCommand]
@@ -323,15 +325,17 @@ namespace RiasBot.Modules.Xp
                     return;
                 }
 
-                var db = _db.GetDbContext();
-                var xpSystemDb = db.XpSystem.Where(x => x.GuildId == Context.Guild.Id);
-                if (xpSystemDb.Any())
+                using (var db = _db.GetDbContext())
                 {
-                    db.RemoveRange(xpSystemDb);
-                    await db.SaveChangesAsync();
-                }
+                    var xpSystemDb = db.XpSystem.Where(x => x.GuildId == Context.Guild.Id);
+                    if (xpSystemDb.Any())
+                    {
+                        db.RemoveRange(xpSystemDb);
+                        await db.SaveChangesAsync();
+                    }
 
-                await ReplyConfirmationAsync("reset_guild_xp");
+                    await ReplyConfirmationAsync("reset_guild_xp");
+                }
             }
         }
         
@@ -437,50 +441,54 @@ namespace RiasBot.Modules.Xp
 
         private async Task RgXpAsync(int xp, IUser user)
         {
-            var db = _db.GetDbContext();
-            var xpDb = db.Users.FirstOrDefault(x => x.UserId == user.Id);
-            if (xpDb is null)
+            using (var db = _db.GetDbContext())
             {
-                await ReplyErrorAsync("user_no_global_xp");
-                return;
-            }
+                var xpDb = db.Users.FirstOrDefault(x => x.UserId == user.Id);
+                if (xpDb is null)
+                {
+                    await ReplyErrorAsync("user_no_global_xp");
+                    return;
+                }
 
-            if (xp > xpDb.Xp)
-            {
-                await ReplyErrorAsync("user_remove_global_xp_exceed", user);
-                return;
-            }
+                if (xp > xpDb.Xp)
+                {
+                    await ReplyErrorAsync("user_remove_global_xp_exceed", user);
+                    return;
+                }
 
-            var level = 0;
-            xpDb.Xp -= xp;
-            var xpSum = xpDb.Xp * 2 / 30;
-            while ((level + 1) * (level + 2) <= xpSum)
-            {
-                level++;
-            }
+                var level = 0;
+                xpDb.Xp -= xp;
+                var xpSum = xpDb.Xp * 2 / 30;
+                while ((level + 1) * (level + 2) <= xpSum)
+                {
+                    level++;
+                }
 
-            xpDb.Level = level;
+                xpDb.Level = level;
             
 
-            await db.SaveChangesAsync();
-            await ReplyConfirmationAsync("user_remove_global_xp", user, level, xpDb.Xp);
+                await db.SaveChangesAsync();
+                await ReplyConfirmationAsync("user_remove_global_xp", user, level, xpDb.Xp);
+            }
         }
 
         private async Task SgLvlAsync(int level, IUser user)
         {
-            var db = _db.GetDbContext();
-            var xpDb = db.Users.FirstOrDefault(x => x.UserId == user.Id);
-            if (xpDb is null)
+            using (var db = _db.GetDbContext())
             {
-                await ReplyErrorAsync("user_no_global_xp");
-                return;
-            }
+                var xpDb = db.Users.FirstOrDefault(x => x.UserId == user.Id);
+                if (xpDb is null)
+                {
+                    await ReplyErrorAsync("user_no_global_xp");
+                    return;
+                }
             
-            xpDb.Level = level;
-            xpDb.Xp = 30 * level * (level + 1) / 2;
+                xpDb.Level = level;
+                xpDb.Xp = 30 * level * (level + 1) / 2;
 
-            await db.SaveChangesAsync();
-            await ReplyConfirmationAsync("user_remove_global_xp", user, level, xpDb.Xp);
+                await db.SaveChangesAsync();
+                await ReplyConfirmationAsync("user_remove_global_xp", user, level, xpDb.Xp);
+            }
         }
     }
 }

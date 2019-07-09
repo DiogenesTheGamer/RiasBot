@@ -359,25 +359,27 @@ namespace RiasBot.Modules.Waifus
                 return;
             }
 
-            var db = _db.GetDbContext();
-            var waifusDb = db.Waifus.Where(w => w.UserId == Context.User.Id);
-            if (!waifusDb.Any())
+            using (var db = _db.GetDbContext())
             {
-                await ReplyErrorAsync("no_waifus");
-                return;
+                var waifusDb = db.Waifus.Where(w => w.UserId == Context.User.Id);
+                if (!waifusDb.Any())
+                {
+                    await ReplyErrorAsync("no_waifus");
+                    return;
+                }
+
+                var belovedWaifu = waifusDb.FirstOrDefault(w => w.IsPrimary);
+                if (belovedWaifu is null)
+                {
+                    await ReplyErrorAsync("no_beloved_waifu");
+                    return;
+                }
+
+                belovedWaifu.BelovedWaifuImage = url;
+                await db.SaveChangesAsync();
+
+                await ReplyConfirmationAsync("beloved_waifu_avatar_changed", belovedWaifu.WaifuName);
             }
-
-            var belovedWaifu = waifusDb.FirstOrDefault(w => w.IsPrimary);
-            if (belovedWaifu is null)
-            {
-                await ReplyErrorAsync("no_beloved_waifu");
-                return;
-            }
-
-            belovedWaifu.BelovedWaifuImage = url;
-            await db.SaveChangesAsync();
-
-            await ReplyConfirmationAsync("beloved_waifu_avatar_changed", belovedWaifu.WaifuName);
         }
 
         [RiasCommand][Aliases]
@@ -402,48 +404,50 @@ namespace RiasBot.Modules.Waifus
                 return;
             }
 
-            var db = _db.GetDbContext();
-            var userDb = db.Users.FirstOrDefault(u => u.UserId == Context.User.Id);
-
-            if (userDb is null || userDb.Currency < 10000)
+            using (var db = _db.GetDbContext())
             {
-                await ReplyErrorAsync("#gambling_currency_not_enough_required", _creds.Currency, 10000);
-                return;
-            }
+                var userDb = db.Users.FirstOrDefault(u => u.UserId == Context.User.Id);
 
-            var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
-                .WithDescription(GetText("create_waifu_confirmation", name))
-                .WithThumbnailUrl(url);
-
-            await Context.Channel.SendMessageAsync(embed: embed.Build());
-            var input = await _is.NextMessageAsync((ShardedCommandContext)Context, timeout: TimeSpan.FromMinutes(1));
-            if (input != null)
-            {
-                if (!string.Equals(input.Content, GetText("#bot_confirm"), StringComparison.InvariantCultureIgnoreCase))
+                if (userDb is null || userDb.Currency < 10000)
                 {
-                    await Context.Channel.SendErrorMessageAsync(GetText("#bot_canceled"));
+                    await ReplyErrorAsync("#gambling_currency_not_enough_required", _creds.Currency, 10000);
                     return;
                 }
 
-                var waifusDb = db.Waifus.Where(x => x.UserId == Context.User.Id);
-                var lastPrimaryWaifu = waifusDb.FirstOrDefault(x => x.IsPrimary);
-                if (lastPrimaryWaifu != null)
-                {
-                    lastPrimaryWaifu.IsPrimary = false;
-                    lastPrimaryWaifu.BelovedWaifuImage = null;
-                }
-
-                var waifu = new DBModels.Waifus { UserId = Context.User.Id, WaifuName = name, WaifuImage = url, WaifuPrice = 10000, IsPrimary = true };
-                await db.AddAsync(waifu);
-                userDb.Currency -= 10000;
-
-                await db.SaveChangesAsync();
-
-                embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
-                    .WithDescription(GetText("waifu_created", name))
+                var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
+                    .WithDescription(GetText("create_waifu_confirmation", name))
                     .WithThumbnailUrl(url);
 
                 await Context.Channel.SendMessageAsync(embed: embed.Build());
+                var input = await _is.NextMessageAsync((ShardedCommandContext)Context, timeout: TimeSpan.FromMinutes(1));
+                if (input != null)
+                {
+                    if (!string.Equals(input.Content, GetText("#bot_confirm"), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        await Context.Channel.SendErrorMessageAsync(GetText("#bot_canceled"));
+                        return;
+                    }
+
+                    var waifusDb = db.Waifus.Where(x => x.UserId == Context.User.Id);
+                    var lastPrimaryWaifu = waifusDb.FirstOrDefault(x => x.IsPrimary);
+                    if (lastPrimaryWaifu != null)
+                    {
+                        lastPrimaryWaifu.IsPrimary = false;
+                        lastPrimaryWaifu.BelovedWaifuImage = null;
+                    }
+
+                    var waifu = new DBModels.Waifus { UserId = Context.User.Id, WaifuName = name, WaifuImage = url, WaifuPrice = 10000, IsPrimary = true };
+                    await db.AddAsync(waifu);
+                    userDb.Currency -= 10000;
+
+                    await db.SaveChangesAsync();
+
+                    embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
+                        .WithDescription(GetText("waifu_created", name))
+                        .WithThumbnailUrl(url);
+
+                    await Context.Channel.SendMessageAsync(embed: embed.Build());
+                }
             }
         }
 

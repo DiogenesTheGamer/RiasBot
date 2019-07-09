@@ -39,89 +39,28 @@ namespace RiasBot.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            #region GuildConfig
-
             var guildEntity = modelBuilder.Entity<GuildConfig>();
-            guildEntity
-                .HasIndex(c => c.GuildId)
-                .IsUnique();
-
-            #endregion
-
-            #region UserConfig
-
+            guildEntity.HasIndex(c => c.GuildId).IsUnique();
+            
             var userEntity = modelBuilder.Entity<UserConfig>();
-            userEntity
-                .HasIndex(c => c.UserId)
-                .IsUnique();
-
-            #endregion
-
-            #region UserGuildConfig
-
+            userEntity.HasIndex(c => c.UserId).IsUnique();
+            
             modelBuilder.Entity<UserGuildConfig>();
-
-            #endregion
-
-            #region Warning
-
             modelBuilder.Entity<Warnings>();
-
-            #endregion
-
-            #region Xp
-
             modelBuilder.Entity<XpSystem>();
-
-            #endregion
-
-            #region Waifus
-
             modelBuilder.Entity<Waifus>();
 
-            #endregion
-
-            #region Patreon
-
             var patreon = modelBuilder.Entity<Patreon>();
-            patreon
-                .HasIndex(c => c.UserId)
-                .IsUnique();
-
-            #endregion
-
-            #region SelfAssignableRoles
-
+            patreon.HasIndex(c => c.UserId).IsUnique();
+            
             modelBuilder.Entity<SelfAssignableRoles>();
-
-            #endregion
-
-            #region XpRolesSystem
-
             modelBuilder.Entity<XpRolesSystem>();
-
-            #endregion
-
-            #region Profile
-
+            
             var profile = modelBuilder.Entity<Profile>();
-            profile
-                .HasIndex(c => c.UserId)
-                .IsUnique();
-
-            #endregion
-
-            #region MuteTimers
-
+            profile.HasIndex(c => c.UserId).IsUnique();
+            
             modelBuilder.Entity<MuteTimers>();
-
-            #endregion
-
-            #region Dailies
-
             modelBuilder.Entity<Dailies>();
-
-            #endregion
         }
     }
 }
