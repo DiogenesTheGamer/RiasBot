@@ -57,66 +57,51 @@ namespace RiasBot.Services
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
-            var currentUser = user.Guild.CurrentUser;
+            _ = Task.Run(async() => await AddAssignableRoleAsync(user));
 
             using (var db = _db.GetDbContext())
             {
                 var guildDb = db.Guilds.FirstOrDefault(g => g.GuildId == user.Guild.Id);
                 var userGuildDb = db.UserGuilds.Where(x => x.GuildId == user.Guild.Id).FirstOrDefault(x => x.UserId == user.Id);
 
-                if (guildDb != null)
+                await SendGreetMessageAsync(guildDb, user);
+
+                var currentUser = user.Guild.CurrentUser;
+                if (!currentUser.GuildPermissions.ManageRoles) return;
+                if (userGuildDb is null) return;
+                if (!userGuildDb.IsMuted) return;
+                
+                var role = user.Guild.GetRole(guildDb?.MuteRole ?? 0) ?? user.Guild.Roles.FirstOrDefault(x => x.Name == "rias-mute");
+                if (role != null)
                 {
-                    if (guildDb.Greet)
-                    {
-                        if (!string.IsNullOrEmpty(guildDb.GreetMessage))
-                        {
-                            var channel = user.Guild.GetTextChannel(guildDb.GreetChannel);
-                            if (channel != null)
-                            {
-                                var bot = user.Guild.CurrentUser;
-                                var preconditions = bot.GetPermissions(channel);
-                                if (preconditions.ViewChannel && preconditions.SendMessages)
-                                {
-                                    var greetMsg = ReplacePlaceholders(user, guildDb.GreetMessage);
-                                    if (Extensions.Extensions.TryParseEmbed(greetMsg, out var embed))
-                                    {
-                                        await channel.SendMessageAsync(embed: embed.Build());
-                                    }
-                                    else
-                                    {
-                                        await channel.SendMessageAsync(greetMsg);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (currentUser.GuildPermissions.ManageRoles)
-                    {
-                        await AddAssignableRoleAsync(guildDb, user, currentUser);
-
-                        if (userGuildDb != null)
-                        {
-                            if (userGuildDb.IsMuted)
-                            {
-                                var role = user.Guild.GetRole(guildDb.MuteRole) ?? user.Guild.Roles.FirstOrDefault(x => x.Name == "rias-mute");
-                                if (role != null)
-                                {
-                                    await user.AddRoleAsync(role);
-                                    await user.ModifyAsync(x => x.Mute = true);
-                                }
-                                else
-                                {
-                                    userGuildDb.IsMuted = false;
-                                    await db.SaveChangesAsync();
-                                }
-                            }
-                        }
-                    }
+                    await user.AddRoleAsync(role);
                 }
-
-                //TODO: reduce the nesting
+                else
+                {
+                    userGuildDb.IsMuted = false;
+                    await db.SaveChangesAsync();
+                }
             }
+        }
+
+        private async Task SendGreetMessageAsync(GuildConfig guildDb, SocketGuildUser user)
+        {
+            if (guildDb is null) return;
+            if (!guildDb.Greet) return;
+            if (string.IsNullOrWhiteSpace(guildDb.GreetMessage)) return;
+            
+            var channel = user.Guild.GetTextChannel(guildDb.GreetChannel);
+            if (channel is null) return;
+
+            var currentUser = user.Guild.CurrentUser;
+            var preconditions = currentUser.GetPermissions(channel);
+            if (!preconditions.ViewChannel || !preconditions.SendMessages) return;
+            
+            var greetMsg = ReplacePlaceholders(user, guildDb.GreetMessage);
+            if (Extensions.Extensions.TryParseEmbed(greetMsg, out var embed))
+                await channel.SendMessageAsync(embed: embed.Build());
+            else
+                await channel.SendMessageAsync(greetMsg);
         }
 
         private async Task UserLeftAsync(SocketGuildUser user)
@@ -124,41 +109,41 @@ namespace RiasBot.Services
             using (var db = _db.GetDbContext())
             {
                 var guildDb = db.Guilds.FirstOrDefault(g => g.GuildId == user.Guild.Id);
-                if (guildDb != null)
-                {
-                    if (guildDb.Bye)
-                    {
-                        if (!string.IsNullOrEmpty(guildDb.ByeMessage))
-                        {
-                            var channel = user.Guild.GetTextChannel(guildDb.ByeChannel);
-                            if (channel != null)
-                            {
-                                var bot = user.Guild.CurrentUser;
-                                var preconditions = bot.GetPermissions(channel);
-                                if (preconditions.ViewChannel && preconditions.SendMessages)
-                                {
-                                    var byeMsg = ReplacePlaceholders(user, guildDb.ByeMessage);
-                                    if (Extensions.Extensions.TryParseEmbed(byeMsg, out var embed))
-                                    {
-                                        await channel.SendMessageAsync(embed: embed.Build());
+                await SendByeMessageAsync(guildDb, user);
 
-                                    }
-                                    else
-                                    {
-                                        await channel.SendMessageAsync(byeMsg);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (guildDb is null) return;
+                if (user.Roles.All(r => r.Id != guildDb.MuteRole))
+                {
+                    var userGuildDb = db.UserGuilds.Where(x => x.GuildId == user.Guild.Id).FirstOrDefault(x => x.UserId == user.Id);
+                    if (userGuildDb is null) return;
+                    
+                    userGuildDb.IsMuted = false;
+                    await db.SaveChangesAsync();
                 }
             }
+        }
+        
+        private async Task SendByeMessageAsync(GuildConfig guildDb, SocketGuildUser user)
+        {
+            if (guildDb is null) return;
+            if (!guildDb.Bye) return;
+            if (string.IsNullOrWhiteSpace(guildDb.ByeMessage)) return;
+            
+            var channel = user.Guild.GetTextChannel(guildDb.ByeChannel);
+            if (channel is null) return;
 
-            //TODO: Add check the mute role (rias-mute) when the user leaves the guild
-            //TODO: reduce the nesting
+            var currentUser = user.Guild.CurrentUser;
+            var preconditions = currentUser.GetPermissions(channel);
+            if (!preconditions.ViewChannel || !preconditions.SendMessages) return;
+            
+            var byeMsg = ReplacePlaceholders(user, guildDb.ByeMessage);
+            if (Extensions.Extensions.TryParseEmbed(byeMsg, out var embed))
+                await channel.SendMessageAsync(embed: embed.Build());
+            else
+                await channel.SendMessageAsync(byeMsg);
         }
 
-        private string ReplacePlaceholders(SocketGuildUser user, string message) 
+        private static string ReplacePlaceholders(SocketGuildUser user, string message) 
             => new StringBuilder(message)
                 .Replace("%mention%", user.Mention)
                 .Replace("%user%", user.ToString())
@@ -193,23 +178,29 @@ namespace RiasBot.Services
             //TODO: make this better
         }
 
-        public async Task AddAssignableRoleAsync(GuildConfig guildDb, IGuildUser user, IGuildUser currentUser)
+        public async Task AddAssignableRoleAsync(IUser user)
         {
-            var roleIds = user.RoleIds;
+            if (!(user is IGuildUser guildUser)) return;
+            
+            var currentUser = await guildUser.Guild.GetCurrentUserAsync();
+            if (!currentUser.GuildPermissions.ManageRoles)
+                return;
+            
+            var roleIds = guildUser.RoleIds;
             if (roleIds.Count > 1) return;
 
-            if (guildDb is null) return;
-
-            if (guildDb.AutoAssignableRole > 0)
+            using (var db = _db.GetDbContext())
             {
-                var aar = _client.GetGuild(user.Guild.Id).GetRole(guildDb.AutoAssignableRole);
-                if (aar != null)
-                {
-                    if (Extensions.UserExtensions.CheckHierarchyRoles(aar, user.Guild, currentUser))
-                    {
-                        await user.AddRoleAsync(aar);
-                    }
-                }
+                var guildDb = db.Guilds.FirstOrDefault(g => g.GuildId == guildUser.GuildId);
+                
+                if (guildDb is null) return;
+                if (guildDb.AutoAssignableRole == 0) return;
+                
+                var aar = guildUser.Guild.GetRole(guildDb.AutoAssignableRole);
+                if (aar is null) return;
+                
+                if (Extensions.UserExtensions.CheckHierarchyRoles(aar, guildUser.Guild, currentUser))
+                    await guildUser.AddRoleAsync(aar);
             }
         }
 

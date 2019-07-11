@@ -48,61 +48,51 @@ namespace RiasBot.Services
             if (!(message is SocketUserMessage userMessage)) return; // Ensure the message is from a user/bot
             if (userMessage.Author.IsBot) return; // Ignore other bots
 
-            var context = new ShardedCommandContext(_client, userMessage);
-
+            var prefix = _creds.Prefix;
             GuildConfig guildDb = null;
             using (var db = _db.GetDbContext())
             {
-                if (!context.IsPrivate)
+                if (userMessage.Channel is SocketTextChannel textChannel)
                 {
-                    guildDb = db.Guilds.FirstOrDefault(x => x.GuildId == context.Guild.Id);
+                    guildDb = db.Guilds.FirstOrDefault(x => x.GuildId == textChannel.Guild.Id);
+                    if (guildDb != null && !string.IsNullOrWhiteSpace(guildDb.Prefix))
+                        prefix = guildDb.Prefix;
+                    
                     var userDb = db.Users.FirstOrDefault(x => x.UserId == userMessage.Author.Id);
-
-                    _ = Task.Run(async () => await GiveXpAsync(context, userMessage, userDb));
-
-                    if (guildDb != null)
-                    {
-                        var currentUser = context.Guild.CurrentUser;
-                        if (currentUser.GuildPermissions.ManageRoles)
-                            await _botService.AddAssignableRoleAsync(guildDb, (IGuildUser) context.User, currentUser);
-                    }
-
-                    if (userDb != null)
-                    {
-                        if (userDb.IsBanned)
-                            return; //banned users cannot use the commands
-                    }
+                    
+                    _ = Task.Run(async () => await GiveXpAsync(userMessage, textChannel.Guild, userDb?.IsBlacklisted));
+                    if (userDb != null && userDb.IsBanned)
+                        return;
                 }
             }
-
-            var prefix = GetPrefix(guildDb, context.IsPrivate);
             
+            _ = Task.Run(async () => await _botService.AddAssignableRoleAsync(userMessage.Author));
+
             var argPos = 0;
-
-            if (userMessage.HasStringPrefix(prefix, ref argPos) ||
-                userMessage.HasStringPrefix($"{context.Client.CurrentUser.Username} ", ref argPos, StringComparison.InvariantCultureIgnoreCase) ||
-                userMessage.HasMentionPrefix(context.Client.CurrentUser, ref argPos))
+            if (!(userMessage.HasStringPrefix(prefix, ref argPos) ||
+                  userMessage.HasStringPrefix($"{_client.CurrentUser.Username} ", ref argPos, StringComparison.InvariantCultureIgnoreCase) ||
+                  userMessage.HasMentionPrefix(_client.CurrentUser, ref argPos))) 
+                return;
+            
+            var context = new ShardedCommandContext(_client, userMessage);
+            var socketGuildUser = context.Guild?.CurrentUser;
+            if (socketGuildUser != null)
             {
-                var socketGuildUser = context.Guild?.CurrentUser;
-                if (socketGuildUser != null)
-                {
-                    var preconditions = socketGuildUser.GetPermissions((IGuildChannel) context.Channel);
-                    if (!preconditions.SendMessages) return;
-                }
-
-                var result = await _commands.ExecuteAsync(context, argPos, _provider);
-                _loggingService.CommandArguments = userMessage.Content.Substring(argPos);
-
-                if (guildDb != null)
-                    if (guildDb.DeleteCommandMessage)
-                        await userMessage.DeleteAsync();
-
-                if (result.IsSuccess)
-                    RiasBot.CommandsExecuted++;
-                else if (result.Error == CommandError.UnmetPrecondition ||
-                         result.Error == CommandError.Exception)
-                    _ = Task.Run(async () => await SendErrorResultAsync(context, userMessage, result));
+                var preconditions = socketGuildUser.GetPermissions((IGuildChannel) context.Channel);
+                if (!preconditions.SendMessages) return;
             }
+
+            var result = await _commands.ExecuteAsync(context, argPos, _provider);
+            _loggingService.CommandArguments = userMessage.Content.Substring(argPos);
+
+            if (guildDb != null && guildDb.DeleteCommandMessage)
+                await userMessage.DeleteAsync();
+
+            if (result.IsSuccess)
+                RiasBot.CommandsExecuted++;
+            
+            if (result.Error == CommandError.UnmetPrecondition)
+                _ = Task.Run(async () => await SendErrorResultAsync(context, userMessage, result));
         }
 
         public string GetPrefix(IGuild guild, bool isPrivate = false)
@@ -121,30 +111,15 @@ namespace RiasBot.Services
             return _creds.Prefix;
         }
 
-        public string GetPrefix(GuildConfig guildDb, bool isPrivate = false)
+        private async Task GiveXpAsync(SocketMessage msg, SocketGuild guild, bool? isUserBlacklisted)
         {
-            if (isPrivate) return _creds.Prefix;
+            var socketGuildUser = guild.GetUser(_client.CurrentUser.Id);
+            var preconditions = socketGuildUser.GetPermissions((IGuildChannel)msg.Channel);
 
-            if (guildDb != null)
-            {
-                return !string.IsNullOrEmpty(guildDb.Prefix) ? guildDb.Prefix : _creds.Prefix;
-            }
+            if (isUserBlacklisted.HasValue && !isUserBlacklisted.Value)
+                await _xpService.GiveXpUserMessageAsync((IGuildUser)msg.Author);
 
-            return _creds.Prefix;
-        }
-
-        private async Task GiveXpAsync(ShardedCommandContext context, SocketUserMessage msg, UserConfig userDb)
-        {
-            if (!context.IsPrivate)
-            {
-                var socketGuildUser = context.Guild.GetUser(_client.CurrentUser.Id);
-                var preconditions = socketGuildUser.GetPermissions((IGuildChannel)context.Channel);
-
-                if (!userDb.IsBlacklisted)
-                    await _xpService.GiveXpUserMessageAsync((IGuildUser)msg.Author);
-
-                await _xpService.GiveGuildXpUserMessageAsync((IGuildUser) msg.Author, context.Channel, preconditions.SendMessages);
-            }
+            await _xpService.GiveGuildXpUserMessageAsync((IGuildUser) msg.Author, msg.Channel, preconditions.SendMessages);
         }
 
         private async Task SendErrorResultAsync(ShardedCommandContext context, SocketMessage msg, IResult result)

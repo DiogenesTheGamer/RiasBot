@@ -27,7 +27,7 @@ namespace RiasBot.Modules.Utility
             [RiasCommand][Aliases]
             [Description][Usages]
             [RequireContext(ContextType.Guild)]
-            [RateLimit(1, 30, RateLimitType.GuildUser)]
+            [RateLimit(1, 30, RateLimitType.User)]
             public async Task ProfileAsync([Remainder] IUser user = null)
             {
                 user = user ?? Context.User;

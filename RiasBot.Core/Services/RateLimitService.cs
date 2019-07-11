@@ -19,9 +19,6 @@ namespace RiasBot.Services
         public RateLimitInfo GetOrAdd(string rule, RateLimitInfo rateLimitInfo)
             => _rateLimits.GetOrAdd(rule, rateLimitInfo);
 
-        public bool TryGetValue(string rule, out RateLimitInfo rateLimitInfo)
-            => _rateLimits.TryGetValue(rule, out rateLimitInfo);
-
         /// <summary>
         /// Get a RateLimit rule for global ratelimits.
         /// </summary>
