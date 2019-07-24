@@ -23,12 +23,12 @@ namespace RiasBot.Modules.Xp.Services
             _db = db;
             _tr = tr;
         }
-        
+
         private readonly string _xpWhitePatternPath = Path.Combine(Environment.CurrentDirectory, "assets/images/xp/xp_white_pattern.png");
         private readonly string _xpBlackPatternPath = Path.Combine(Environment.CurrentDirectory, "assets/images/xp/xp_black_pattern.png");
         private readonly string _globalXpBarBgPath = Path.Combine(Environment.CurrentDirectory, "assets/images/xp/global_xp_bar_bg.png");
         private readonly string _guildXpBarBgPath = Path.Combine(Environment.CurrentDirectory, "assets/images/xp/guild_xp_bar_bg.png");
-        
+
         private readonly string _aweryFontPath = Path.Combine(Environment.CurrentDirectory, "assets/fonts/Awery.ttf");
         private readonly string _meiryoFontPath = Path.Combine(Environment.CurrentDirectory, "assets/fonts/Meiryo.ttf");
 
@@ -46,10 +46,10 @@ namespace RiasBot.Modules.Xp.Services
 
                     return;
                 }
-            
+
                 var timeout = userDb.MessageDateTime;
                 if (DateTime.UtcNow < timeout.Add(TimeSpan.FromMinutes(5))) return;
-            
+
                 var level = userDb.Level;
                 var currentXp = userDb.Xp - (30 + level * 30) * level / 2;
                 var nextLevelXp = (level + 1) * 30;
@@ -65,7 +65,7 @@ namespace RiasBot.Modules.Xp.Services
                 await db.SaveChangesAsync();
             }
         }
-        
+
         public async Task GiveGuildXpUserMessageAsync(IGuildUser user, IMessageChannel channel, bool sendXpNotificationMessage)
         {
             using (var db = _db.GetDbContext())
@@ -80,10 +80,10 @@ namespace RiasBot.Modules.Xp.Services
 
                     return;
                 }
-            
+
                 var timeout = xpDb.MessageDateTime;
                 if (DateTime.UtcNow < timeout.Add(TimeSpan.FromMinutes(5))) return;
-            
+
                 var level = xpDb.Level;
                 var currentXp = xpDb.Xp - (30 + level * 30) * level / 2;
                 var nextLevelXp = (level + 1) * 30;
@@ -112,7 +112,7 @@ namespace RiasBot.Modules.Xp.Services
                 }
             }
         }
-        
+
         private async Task RewardUserRoleAsync(IGuildUser user, int level)
         {
             var currentUser = await user.Guild.GetCurrentUserAsync();
@@ -134,11 +134,11 @@ namespace RiasBot.Modules.Xp.Services
                         db.Remove(roleReward);
                         await db.SaveChangesAsync();
                     }
-                } 
+                }
             }
-            
+
         }
-        
+
         public async Task<MemoryStream> GenerateXpImageAsync(IGuildUser user, IRole highestRole)
         {
             //Init
@@ -148,7 +148,7 @@ namespace RiasBot.Modules.Xp.Services
             using (var img = new MagickImage(accentColor, 500, 300))
             {
                 var foreColor = (ImageExtensions.PerceivedBrightness(accentColor) > 130) ? MagickColors.Black : MagickColors.White;
-            
+
             //Pattern
             if (foreColor == MagickColors.White)
             {
@@ -164,7 +164,7 @@ namespace RiasBot.Modules.Xp.Services
                     img.Draw(new DrawableComposite(0, 0, blackPatternTemp));
                 }
             }
-            
+
             //Avatar
             using (var avatar = await http.GetStreamAsync(user.GetRealAvatarUrl()))
             {
@@ -177,13 +177,13 @@ namespace RiasBot.Modules.Xp.Services
                     };
                     avatarTemp.Resize(size);
                     avatarTemp.Roundify();
-                    img.Draw(new DrawableComposite(215, 10, avatarTemp));     
+                    img.Draw(new DrawableComposite(215, 10, avatarTemp));
                 }
             }
 
             //Avatar Circle
             img.Draw(new Drawables().StrokeWidth(3).StrokeColor(foreColor).FillColor(MagickColors.Transparent).RoundRectangle(213, 8, 286, 81, 45, 45));
-            
+
             //Username
             var usernameSettings = new MagickReadSettings()
             {
@@ -199,45 +199,45 @@ namespace RiasBot.Modules.Xp.Services
             {
                 img.Draw(new DrawableComposite(50, 90, username));
             }
-            
+
             //GlobalXp Box, GuildXp Box
             img.Draw(new Drawables().StrokeWidth(2).StrokeColor(foreColor).FillColor(MagickColors.Transparent).Rectangle(10, 130, 115, 205));
             img.Draw(new Drawables().StrokeWidth(2).StrokeColor(foreColor).FillColor(MagickColors.Transparent).Rectangle(10, 215, 115, 290));
-            
+
             using (var globalXpBarBg = new MagickImage(_globalXpBarBgPath))
             using (var guildXpBarBg = new MagickImage(_guildXpBarBgPath))
             {
                 img.Draw(new DrawableComposite(125, 130, globalXpBarBg));
                 img.Draw(new DrawableComposite(125, 215, guildXpBarBg));
             }
-            
+
             //Xp Info
             var xpInfo = GetXpInfo(user);
-            
+
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 150, "GLOBAL").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(17));
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 234, "SERVER").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(17));
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 170, $"LVL. {xpInfo.GlobalLevel}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(15));
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 254, $"LVL. {xpInfo.GuildLevel}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(15));
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 190, $"#{xpInfo.GlobalRank}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(15));
             img.Draw(new Drawables().FillColor(foreColor).Text(60, 276, $"#{xpInfo.GuildRank}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(15));
-            
+
             //Xp Levels
             var xpBgColor = MagickColor.FromRgba((byte)accentColor.R, (byte)accentColor.G, (byte)accentColor.B, 127);
-            
+
             var globalLevel = xpInfo.GlobalLevel;
             var globalCurrentXp = xpInfo.GlobalXp - (30 + globalLevel * 30) * globalLevel / 2;
             var globalNextLevelXp = (globalLevel + 1) * 30;
-            
+
             img.Draw(new Drawables().FillColor(xpBgColor).Rectangle(125, 130, 125 + 350 * ((double)globalCurrentXp / globalNextLevelXp), 205));
             img.Draw(new Drawables().FillColor(MagickColors.Black).Text(300, 175, $"{globalCurrentXp}/{globalNextLevelXp}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(17));
-            
+
             var guildLevel = xpInfo.GuildLevel;
             var guildCurrentXp = xpInfo.GuildXp - (30 + guildLevel * 30) * guildLevel / 2;
             var guildNextLevelXp = (guildLevel + 1) * 30;
-            
+
             img.Draw(new Drawables().FillColor(xpBgColor).Rectangle(125, 215, 125 + 350 * ((double)guildCurrentXp / guildNextLevelXp), 290));
             img.Draw(new Drawables().FillColor(MagickColors.Black).Text(300, 255, $"{guildCurrentXp}/{guildNextLevelXp}").TextAlignment(TextAlignment.Center).Font(_aweryFontPath).FontPointSize(17));
-            
+
             var imageStream = new MemoryStream();
             img.Write(imageStream, MagickFormat.Png);
             imageStream.Position = 0;
@@ -274,7 +274,7 @@ namespace RiasBot.Modules.Xp.Services
                     guildRank = xpGuildDb.IndexOf(guildUserXp.Xp) + 1;
                 }
             }
-            
+
             return new XpInfo
             {
                 GuildLevel = guildLevel,
@@ -285,7 +285,7 @@ namespace RiasBot.Modules.Xp.Services
                 GuildRank = guildRank
             };
         }
-        
+
         private static MagickColor GetUserHighRoleColor(IRole role)
         {
             if (string.Equals(role.Name, "@everyone") || role.Color.Equals(Color.Default))

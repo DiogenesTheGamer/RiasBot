@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using RiasBot.Commons.Attributes;
+using Serilog;
 
 namespace RiasBot.Services.Implementation
 {
@@ -14,7 +15,7 @@ namespace RiasBot.Services.Implementation
         private readonly ILocalization _localization;
         private readonly ImmutableDictionary<string, ImmutableDictionary<string, string>> _translations;
 
-        public Translations(ILocalization localization, RLog log)
+        public Translations(ILocalization localization)
         {
             _localization = localization;
 
@@ -35,7 +36,7 @@ namespace RiasBot.Services.Implementation
             _translations = translationsDictionary.ToImmutableDictionary();
 
             stw.Stop();
-            log.Info($"Translations loaded: {stw.ElapsedMilliseconds} ms");
+            Log.Information($"Translations loaded: {stw.ElapsedMilliseconds} ms");
         }
 
         private string GetText(ulong guildId, string key)

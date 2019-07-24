@@ -48,7 +48,7 @@ namespace RiasBot.Modules.Xp
                 using (var img = await Service.GenerateXpImageAsync((IGuildUser) user, highestRole))
                 {
                     if (img != null)
-                        await Context.Channel.SendFileAsync(img, $"{user.Id}_xp.png");   
+                        await Context.Channel.SendFileAsync(img, $"{user.Id}_xp.png");
                 }
             }
             catch
@@ -69,7 +69,7 @@ namespace RiasBot.Modules.Xp
             page--;
             if (page < 0)
                 return;
-            
+
             var restClient = ((DiscordShardedClient) Context.Client).GetShardFor(Context.Guild).Rest;
 
             using (var db = _db.GetDbContext())
@@ -132,7 +132,7 @@ namespace RiasBot.Modules.Xp
                 var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)
                     .WithDescription(string.Join("\n", xpList));
 
-                await Context.Channel.SendMessageAsync(embed: embed.Build());   
+                await Context.Channel.SendMessageAsync(embed: embed.Build());
             }
         }
 
@@ -164,7 +164,7 @@ namespace RiasBot.Modules.Xp
                 if (xpNotify)
                     await ReplyConfirmationAsync("notifications_enabled");
                 else
-                    await ReplyConfirmationAsync("notifications_disabled");   
+                    await ReplyConfirmationAsync("notifications_disabled");
             }
         }
 
@@ -200,11 +200,11 @@ namespace RiasBot.Modules.Xp
                     await ReplyErrorAsync("role_reward_level_no_role", level);
                     return;
                 }
-                
+
                 var roles = ulong.TryParse(name, out var id)
                     ? Context.Guild.Roles.Where(r => r.Id == id).ToList()
                     : Context.Guild.Roles.Where(r => string.Equals(r.Name, name, StringComparison.InvariantCultureIgnoreCase)).ToList();
-            
+
                 if (!roles.Any())
                 {
                     await ReplyErrorAsync("#administration_role_not_found");
@@ -227,7 +227,7 @@ namespace RiasBot.Modules.Xp
                         }
 
                     };
-                
+
                     await _is.SendPaginatedMessageAsync((ShardedCommandContext)Context, pager);
                     return;
                 }
@@ -287,7 +287,7 @@ namespace RiasBot.Modules.Xp
 
                 if (saveDb)
                     await db.SaveChangesAsync();
-            
+
                 var pager = new PaginatedMessage
                 {
                     Title = GetText("role_rewards"),
@@ -302,7 +302,7 @@ namespace RiasBot.Modules.Xp
                     }
 
                 };
-            
+
                 await _is.SendPaginatedMessageAsync((ShardedCommandContext)Context, pager);
             }
         }
@@ -338,7 +338,7 @@ namespace RiasBot.Modules.Xp
                 }
             }
         }
-        
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -401,10 +401,10 @@ namespace RiasBot.Modules.Xp
         public async Task SetGlobalLevelAsync(int level, [Remainder] IGuildUser user)
         {
             if (level < 0) return;
-            
+
             await SgLvlAsync(level, user);
         }
-        
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -414,7 +414,7 @@ namespace RiasBot.Modules.Xp
         public async Task SetGlobalLevelAsync(int level, [Remainder] string user)
         {
             if (level < 0) return;
-            
+
             IUser getUser;
             if (ulong.TryParse(user, out var id))
             {
@@ -465,7 +465,7 @@ namespace RiasBot.Modules.Xp
                 }
 
                 xpDb.Level = level;
-            
+
 
                 await db.SaveChangesAsync();
                 await ReplyConfirmationAsync("user_remove_global_xp", user, level, xpDb.Xp);
@@ -482,7 +482,7 @@ namespace RiasBot.Modules.Xp
                     await ReplyErrorAsync("user_no_global_xp");
                     return;
                 }
-            
+
                 xpDb.Level = level;
                 xpDb.Xp = 30 * level * (level + 1) / 2;
 

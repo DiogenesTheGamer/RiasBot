@@ -5,6 +5,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using RiasBot.Commons.Attributes;
+using Serilog;
+using Serilog.Events;
 using Victoria;
 
 namespace RiasBot.Services
@@ -12,32 +14,45 @@ namespace RiasBot.Services
     [Service]
     public class LoggingService
     {
-        public bool Ready { get; set; }
         public string CommandArguments { private get; set; }
 
-        public LoggingService(DiscordShardedClient client, CommandService commands, LavaShardClient lavaShardClient, RLog log)
+        public LoggingService(DiscordShardedClient client, CommandService commands, LavaShardClient lavaShardClient)
         {
             client.Log += OnDiscordLogAsync;
             commands.Log += OnDiscordLogAsync;
             commands.CommandExecuted += OnCommandLogAsync;
             lavaShardClient.Log += OnDiscordLogAsync;
-            log.Log += OnDiscordLogAsync;
         }
 
         private Task OnDiscordLogAsync(LogMessage msg)
         {
-            if (!Ready)
+            LogEventLevel logEventLevel;
+            switch (msg.Severity)
             {
-                var log = $"{DateTime.UtcNow:MMM dd hh:mm:ss} [{msg.Severity}] {msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";
-
-                Console.Out.WriteLineAsync(log);
+                case LogSeverity.Verbose:
+                    logEventLevel = LogEventLevel.Verbose;
+                    break;
+                case LogSeverity.Info:
+                    logEventLevel = LogEventLevel.Information;
+                    break;
+                case LogSeverity.Debug:
+                    logEventLevel = LogEventLevel.Debug;
+                    break;
+                case LogSeverity.Warning:
+                    logEventLevel = LogEventLevel.Warning;
+                    break;
+                case LogSeverity.Error:
+                    logEventLevel = LogEventLevel.Error;
+                    break;
+                case LogSeverity.Critical:
+                    logEventLevel = LogEventLevel.Fatal;
+                    break;
+                default:
+                    logEventLevel = LogEventLevel.Verbose;
+                    break;
             }
-            else if (msg.Severity == LogSeverity.Info || msg.Severity == LogSeverity.Error || msg.Severity == LogSeverity.Critical)
-            {
-                var log = $"{DateTime.UtcNow:MMM dd hh:mm:ss} [{msg.Severity}] {msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";
 
-                Console.Out.WriteLineAsync(log);
-            }
+            Log.Logger.Write(logEventLevel, $"{msg.Source}: {msg.Exception?.ToString() ?? msg.Message}");
 
             return Task.CompletedTask;
         }
@@ -45,8 +60,8 @@ namespace RiasBot.Services
         private Task OnCommandLogAsync(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
         {
             if (!commandInfo.IsSpecified) return Task.CompletedTask;
-            
-            Console.Out.WriteLineAsync($"{DateTime.UtcNow:MMM dd hh:mm:ss} [Command] \"{commandInfo.Value?.Name}\"\n" +
+
+            Log.Information($"{DateTime.UtcNow:MMM dd hh:mm:ss} [Command] \"{commandInfo.Value?.Name}\"\n" +
                                        $"\t\t[Arguments] \"{CommandArguments}\"\n" +
                                        $"\t\t[User] \"{context.User}\" ({context.User.Id})\n" +
                                        $"\t\t[Channel] \"{context.Channel.Name}\" ({context.Channel.Id})\n" +

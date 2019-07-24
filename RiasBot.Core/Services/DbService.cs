@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using RiasBot.Commons.Attributes;
 using RiasBot.Database;
+using Serilog;
 
 namespace RiasBot.Services
 {
@@ -11,7 +12,7 @@ namespace RiasBot.Services
     {
         private readonly DbContextOptions<RiasContext> _options;
 
-        public DbService(IBotCredentials creds, RLog log)
+        public DbService(IBotCredentials creds)
         {
             if (creds.DatabaseConfig != null)
             {
@@ -29,11 +30,11 @@ namespace RiasBot.Services
 
                 optionsBuilder.UseNpgsql(connectionString.ToString());
                 _options = optionsBuilder.Options;
-                log.Info("Connected to database PostreSQL");
+                Log.Information("Connected to database PostreSQL");
             }
             else
             {
-                log.Error("The database connection is not defined in credentials.json");
+                Log.Error("The database connection is not defined in credentials.json");
             }
         }
 

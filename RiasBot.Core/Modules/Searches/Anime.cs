@@ -228,15 +228,17 @@ namespace RiasBot.Modules.Searches
                 if (string.IsNullOrEmpty(nativeName))
                     nativeName = "-";
 
-                var alternative = character.Name.Alternative.Any() ? string.Join("\n", character.Name.Alternative) : "-";
+                var alternative = character.Name.Alternative.Any(a => !string.IsNullOrWhiteSpace(a))
+                    ? string.Join("\n", character.Name.Alternative)
+                    : "-";
 
                 var description = new StringBuilder(character.Description);
-                if (description.Length > 0)
+                if (description.Length != 0)
                 {
                     description.Replace("<br>", "");
                     if (description.Length > 1000)
                     {
-                        description.Remove(1000, description.Length - 1000);
+                        description.Remove(900, description.Length - 900);
                         description.Append("... ").Append($"[{GetText("more")}]({character.SiteUrl})");
                     }
                 }

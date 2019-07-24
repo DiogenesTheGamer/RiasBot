@@ -141,7 +141,7 @@
   "bot_users": "Users",
   "bot_update": "Shutting down...",
   "bot_guild_not_found": "I couldn't find the guild.",
-  "bot_text_channel_no_permission_view": "I don't have the permission to send messages to that text channel.",
+  "bot_text_channel_no_permission_send": "I don't have the permission to send messages to that text channel.",
   "bot_message_sent": "Message sent.",
   "bot_message_user_not_sent": "I couldn't send the message to the user.",
   "bot_user_not_found": "I couldn't find the user.",
@@ -489,6 +489,6 @@
   "xp_user_no_global_xp": "The user doesn't have global xp.",
   "xp_user_remove_global_xp_exceed": "The xp you're trying to take exceeds the total xp of **{0}**.",
   "xp_user_remove_global_xp": "**{0}** is now level {1} with {2} total global xp.",
-  
+
   "rate_limit_exceeded": "Hey, calm down! Take a breath and try again in {0} seconds."
 }

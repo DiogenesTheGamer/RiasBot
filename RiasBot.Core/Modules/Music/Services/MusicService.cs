@@ -14,6 +14,7 @@ using RiasBot.Extensions;
 using RiasBot.Modules.Music.Commons;
 using RiasBot.Modules.Music.Extensions;
 using RiasBot.Services;
+using Serilog;
 using Victoria;
 using Victoria.Entities;
 using GExtensions = RiasBot.Extensions.Extensions;
@@ -30,10 +31,9 @@ namespace RiasBot.Modules.Music.Services
         private readonly DbService _db;
         private readonly InteractiveService _is;
         private readonly ITranslations _tr;
-        private readonly RLog _log;
 
         public MusicService(DiscordShardedClient client, LavaShardClient lavaShardClient, IBotCredentials creds, DbService db,
-            InteractiveService iss, ITranslations tr, RLog log)
+            InteractiveService iss, ITranslations tr)
         {
             _client = client;
             _lavaShardClient = lavaShardClient;
@@ -42,7 +42,6 @@ namespace RiasBot.Modules.Music.Services
             _db = db;
             _is = iss;
             _tr = tr;
-            _log = log;
 
             _client.ShardDisconnected += ShardDisconnectedAsync;
             _client.LeftGuild += LeftGuildAsync;
@@ -52,7 +51,7 @@ namespace RiasBot.Modules.Music.Services
             _lavaShardClient.OnTrackFinished += TrackFinishedAsync;
             _lavaShardClient.OnTrackStuck += TrackStuckAsync;
         }
-        
+
 //        private async Task ReplyConfirmationAsync(IMessageChannel channel, ulong guildId, string lowerModuleTypeName, string key)
 //            => await channel.SendConfirmationMessageAsync(_tr.GetText(guildId, lowerModuleTypeName, key));
 
@@ -79,7 +78,7 @@ namespace RiasBot.Modules.Music.Services
                 await StopAsync(guildUser.Guild);
                 return;
             }
-            
+
             if (oldState.VoiceChannel != null)
                 await AutoDisconnect(oldState.VoiceChannel.Users, guildUser);
 
@@ -91,7 +90,7 @@ namespace RiasBot.Modules.Music.Services
         {
             if (!users.Contains(await guildUser.Guild.GetCurrentUserAsync()))
                 return;
-            
+
             if (users.Count(u => !u.IsBot) < 1)
             {
                 await StartAutoDisconnecting(guildUser.Guild, TimeSpan.FromMinutes(2));
@@ -109,9 +108,9 @@ namespace RiasBot.Modules.Music.Services
                 var player = musicPlayer.Player;
                 if (player.IsPlaying && !player.IsPaused)
                     await musicPlayer.Player.PauseAsync();
-                    
+
                 musicPlayer.AutoDisconnectTimer = new Timer(async _ => await StopAsync(guild), null, dueTime, TimeSpan.Zero);
-                    
+
                 var outputChannel = MusicExtensions.CheckOutputChannel(_client, musicPlayer.Guild, musicPlayer.Channel);
                 if (string.Equals(outputChannel, "TRUE"))
                     await ReplyConfirmationAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "stop_after");
@@ -124,7 +123,7 @@ namespace RiasBot.Modules.Music.Services
             {
                 if (musicPlayer.AutoDisconnectTimer is null)
                     return;
-                
+
                 var player = musicPlayer.Player;
                 if (player.IsPlaying && player.IsPaused)
                 {
@@ -147,7 +146,7 @@ namespace RiasBot.Modules.Music.Services
                 await StopAsync(guild);
             }
         }
-        
+
         private async Task LeftGuildAsync(SocketGuild guild)
         {
             await StopAsync(guild);
@@ -163,7 +162,7 @@ namespace RiasBot.Modules.Music.Services
             catch (Exception e)
             {
                 await ReplyErrorAsync(context.Channel, voiceChannel.GuildId, LowerModuleTypeName, "search_tracks_error", _creds.OwnerServerInvite);
-                await _log.Error(e.ToString());
+                Log.Error(e.ToString());
                 return;
             }
 
@@ -203,13 +202,13 @@ namespace RiasBot.Modules.Music.Services
             if (track != null)
             {
                 var addTrack = true;
-                
+
                 if (!track.IsStream && track.Length > TimeSpan.FromHours(3) && !musicPlayer.Features.LongTracks)
                 {
                     addTrack = false;
                     await ReplyErrorAsync(musicPlayer.Channel, voiceChannel.GuildId, LowerModuleTypeName, "player_feature_long_tracks", 3, _creds.Patreon);
                 }
-                
+
                 if (track.IsStream && !musicPlayer.Features.Livestreams)
                 {
                     addTrack = false;
@@ -254,10 +253,10 @@ namespace RiasBot.Modules.Music.Services
 
             if (!tracks.Any())
                 return;
-            
+
             if (!musicPlayer.Features.LongTracks)
                 tracks = tracks.Where(t => t.Length < TimeSpan.FromHours(3)).ToList();
-            
+
             if (!musicPlayer.Features.Livestreams)
                 tracks = tracks.Where(t => !t.IsStream).ToList();
 
@@ -288,10 +287,10 @@ namespace RiasBot.Modules.Music.Services
             {
                 var voiceChannel = musicPlayer.Player.VoiceChannel;
                 await _lavaShardClient.DisconnectAsync(voiceChannel);
-                
+
                 if (!showMessage)
                     return;
-                
+
                 var reason = MusicExtensions.CheckOutputChannel(_client, musicPlayer.Guild, musicPlayer.Channel);
                 if (string.Equals(reason, "TRUE"))
                     await ReplyConfirmationAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "destroyed", voiceChannel.Name);
@@ -518,7 +517,7 @@ namespace RiasBot.Modules.Music.Services
                             break;
                         }
                     }
-                    
+
                     if (trackContent is null)
                     {
                         await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "no_track_found");
@@ -538,7 +537,7 @@ namespace RiasBot.Modules.Music.Services
             if (MusicPlayers.TryGetValue(guild.Id, out var musicPlayer))
             {
                 var player = musicPlayer.Player;
-                
+
                 if (!player.IsPlaying)
                 {
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "player_not_playing");
@@ -550,7 +549,7 @@ namespace RiasBot.Modules.Music.Services
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "player_is_paused");
                     return;
                 }
-                
+
                 var currentTrack = musicPlayer.CurrentTrack;
                 if (position > currentTrack.Track.Length)
                 {
@@ -602,19 +601,19 @@ namespace RiasBot.Modules.Music.Services
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "player_feature_volume", _creds.Patreon);
                     return;
                 }
-                
+
                 if (volume < 0)
                 {
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "volume_lower_zero");
                     return;
                 }
-                
+
                 if (volume > 100)
                 {
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "volume_higher_than", 100);
                     return;
                 }
-                
+
                 if (!player.IsPlaying)
                 {
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "player_not_playing");
@@ -635,12 +634,12 @@ namespace RiasBot.Modules.Music.Services
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "queue_empty");
                     return;
                 }
-                
+
                 musicPlayer.Queue.Shuffle();
                 await ReplyConfirmationAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "queue_shuffled");
             }
         }
-        
+
         public async Task ClearAsync(IGuild guild)
         {
             if (MusicPlayers.TryGetValue(guild.Id, out var musicPlayer))
@@ -650,7 +649,7 @@ namespace RiasBot.Modules.Music.Services
                     await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "queue_empty");
                     return;
                 }
-                
+
                 musicPlayer.Queue.Clear();
                 await ReplyConfirmationAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "queue_cleared");
             }
@@ -697,7 +696,7 @@ namespace RiasBot.Modules.Music.Services
                             break;
                         }
                     }
-                    
+
                     if (trackContent is null)
                     {
                         await ReplyErrorAsync(musicPlayer.Channel, guild.Id, LowerModuleTypeName, "no_track_found");
@@ -730,13 +729,13 @@ namespace RiasBot.Modules.Music.Services
                 await player.PlayAsync(musicPlayer.CurrentTrack.Track);
                 return;
             }
-            
+
             if (musicPlayer.Queue.Count > 0)
             {
                 var trackContent = musicPlayer.Queue.First();
                 musicPlayer.Queue.RemoveAt(0);
                 musicPlayer.CurrentTrack = trackContent;
-                
+
                 await player.PlayAsync(trackContent.Track);
                 await SendNowPlayingMessageAsync(trackContent, musicPlayer);
             }
@@ -763,8 +762,8 @@ namespace RiasBot.Modules.Music.Services
                     var searchResult = await _lavaRestClient.SearchTracksAsync(query, true);
 
                     switch (searchResult.LoadType)
-                    { 
-                        case LoadType.TrackLoaded: 
+                    {
+                        case LoadType.TrackLoaded:
                             return new MusicSearchResult
                             {
                                 SearchType = SearchType.Url,
@@ -896,7 +895,7 @@ namespace RiasBot.Modules.Music.Services
                     : track.Length.DigitalTimeSpanString(), true)
                 .AddField(_tr.GetText(user.GuildId, LowerModuleTypeName, "etp"), etp, true)
                 .WithThumbnailUrl(await track.FetchThumbnailAsync());
-            
+
             if (musicPlayer.Repeat)
                 embed.AddField(_tr.GetText(user.GuildId, LowerModuleTypeName, "repeat"), _tr.GetText(user.GuildId, null, "#utility_enabled"), true);
 
@@ -928,7 +927,7 @@ namespace RiasBot.Modules.Music.Services
                 }
             }
 
-            await _log.Error($"Something went wrong on playing the next track!\n Reason: {reason}");
+            Log.Error($"Something went wrong on playing the next track!\n Reason: {reason}");
         }
 
         private async Task TrackStuckAsync(LavaPlayer player, LavaTrack track, long threshold)
@@ -959,9 +958,9 @@ namespace RiasBot.Modules.Music.Services
                 //the features are unlocked if the bot owner joined the bot
                 if (user.Id == _creds.MasterId)
                     return allFeaturesUnlocked;
-                
+
                 //the features are unlocked in the bot owner's guild
-                if (user.GuildId == _creds.OwnerServerId) 
+                if (user.GuildId == _creds.OwnerServerId)
                     return allFeaturesUnlocked;
 
                 var guildOwnerId = user.Guild.OwnerId;
@@ -973,13 +972,13 @@ namespace RiasBot.Modules.Music.Services
 
                 if (patron.Reward >= 5000)
                     playerFeatures.Volume = true;
-                
+
                 if (patron.Reward >= 10000)
                     playerFeatures.LongTracks = true;
-                
+
                 if (patron.Reward >= 15000)
                     playerFeatures.Livestreams = true;
-                
+
                 return playerFeatures;
             }
         }

@@ -70,7 +70,7 @@ namespace RiasBot.Services
                 if (!currentUser.GuildPermissions.ManageRoles) return;
                 if (userGuildDb is null) return;
                 if (!userGuildDb.IsMuted) return;
-                
+
                 var role = user.Guild.GetRole(guildDb?.MuteRole ?? 0) ?? user.Guild.Roles.FirstOrDefault(x => x.Name == "rias-mute");
                 if (role != null)
                 {
@@ -89,14 +89,14 @@ namespace RiasBot.Services
             if (guildDb is null) return;
             if (!guildDb.Greet) return;
             if (string.IsNullOrWhiteSpace(guildDb.GreetMessage)) return;
-            
+
             var channel = user.Guild.GetTextChannel(guildDb.GreetChannel);
             if (channel is null) return;
 
             var currentUser = user.Guild.CurrentUser;
             var preconditions = currentUser.GetPermissions(channel);
             if (!preconditions.ViewChannel || !preconditions.SendMessages) return;
-            
+
             var greetMsg = ReplacePlaceholders(user, guildDb.GreetMessage);
             if (Extensions.Extensions.TryParseEmbed(greetMsg, out var embed))
                 await channel.SendMessageAsync(embed: embed.Build());
@@ -116,26 +116,26 @@ namespace RiasBot.Services
                 {
                     var userGuildDb = db.UserGuilds.Where(x => x.GuildId == user.Guild.Id).FirstOrDefault(x => x.UserId == user.Id);
                     if (userGuildDb is null) return;
-                    
+
                     userGuildDb.IsMuted = false;
                     await db.SaveChangesAsync();
                 }
             }
         }
-        
+
         private async Task SendByeMessageAsync(GuildConfig guildDb, SocketGuildUser user)
         {
             if (guildDb is null) return;
             if (!guildDb.Bye) return;
             if (string.IsNullOrWhiteSpace(guildDb.ByeMessage)) return;
-            
+
             var channel = user.Guild.GetTextChannel(guildDb.ByeChannel);
             if (channel is null) return;
 
             var currentUser = user.Guild.CurrentUser;
             var preconditions = currentUser.GetPermissions(channel);
             if (!preconditions.ViewChannel || !preconditions.SendMessages) return;
-            
+
             var byeMsg = ReplacePlaceholders(user, guildDb.ByeMessage);
             if (Extensions.Extensions.TryParseEmbed(byeMsg, out var embed))
                 await channel.SendMessageAsync(embed: embed.Build());
@@ -143,7 +143,7 @@ namespace RiasBot.Services
                 await channel.SendMessageAsync(byeMsg);
         }
 
-        private static string ReplacePlaceholders(SocketGuildUser user, string message) 
+        private static string ReplacePlaceholders(SocketGuildUser user, string message)
             => new StringBuilder(message)
                 .Replace("%mention%", user.Mention)
                 .Replace("%user%", user.ToString())
@@ -154,7 +154,6 @@ namespace RiasBot.Services
 
         private async Task ShardConnected(DiscordSocketClient client)
         {
-            _loggingService.Ready = true;
             if (!_allShardsDoneConnection)
                 _shardsConnected++;
 
@@ -181,24 +180,24 @@ namespace RiasBot.Services
         public async Task AddAssignableRoleAsync(IUser user)
         {
             if (!(user is IGuildUser guildUser)) return;
-            
+
             var currentUser = await guildUser.Guild.GetCurrentUserAsync();
             if (!currentUser.GuildPermissions.ManageRoles)
                 return;
-            
+
             var roleIds = guildUser.RoleIds;
             if (roleIds.Count > 1) return;
 
             using (var db = _db.GetDbContext())
             {
                 var guildDb = db.Guilds.FirstOrDefault(g => g.GuildId == guildUser.GuildId);
-                
+
                 if (guildDb is null) return;
                 if (guildDb.AutoAssignableRole == 0) return;
-                
+
                 var aar = guildUser.Guild.GetRole(guildDb.AutoAssignableRole);
                 if (aar is null) return;
-                
+
                 if (Extensions.UserExtensions.CheckHierarchyRoles(aar, guildUser.Guild, currentUser))
                     await guildUser.AddRoleAsync(aar);
             }

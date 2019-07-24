@@ -10,6 +10,7 @@ using RiasBot.Commons;
 using RiasBot.Commons.Attributes;
 using RiasBot.Database.Models;
 using RiasBot.Services.Websockets;
+using Serilog;
 
 namespace RiasBot.Services
 {
@@ -18,20 +19,18 @@ namespace RiasBot.Services
     {
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
-        private readonly RLog _log;
-        
-        public VotesService(IBotCredentials creds, DbService db, RLog log)
+
+        public VotesService(IBotCredentials creds, DbService db)
         {
             _creds = creds;
             _db = db;
-            _log = log;
         }
-        
+
         public List<Votes> VotesList;
         private VotesWebsocket _votesWebSocket;
-        
+
         private string _protocol;
-        
+
         public async Task ConfigureVotesWebSocket()
         {
             if (string.IsNullOrEmpty(_creds.VotesManagerConfig.WebSocketHost) || _creds.VotesManagerConfig.WebSocketPort == 0)
@@ -39,23 +38,23 @@ namespace RiasBot.Services
                 //the votes manager is not configured
                 return;
             }
-            
+
             _protocol = _creds.VotesManagerConfig.IsSecureConnection ? "https" : "http";
-            
-            _votesWebSocket = new VotesWebsocket(_creds.VotesManagerConfig, _log);
+
+            _votesWebSocket = new VotesWebsocket(_creds.VotesManagerConfig);
             await _votesWebSocket.Connect();
 
             _votesWebSocket.OnConnected += VotesWebSocketConnected;
             _votesWebSocket.OnReceive += AwardVoter;
         }
-        
+
         private async Task LoadVotes()
         {
             try
             {
                 var stw = new Stopwatch();
                 stw.Start();
-                
+
                 using (var db = _db.GetDbContext())
                 using (var http = new HttpClient())
                 {
@@ -63,10 +62,10 @@ namespace RiasBot.Services
                     http.DefaultRequestHeaders.Add("Authorization", _creds.VotesManagerConfig.Authorization);
                     var votesApi = await http.GetStringAsync($"{_protocol}://{_creds.VotesManagerConfig.WebSocketHost}/api/votes");
                     var dblVotes = JsonConvert.DeserializeObject<DBL>(votesApi);
-                    
+
                     VotesList = new List<Votes>();
                     var votes = dblVotes.Votes.Where(x => x.Type == "upvote").ToList();
-                    
+
                     foreach (var vote in votes)
                     {
                         var date = vote.Date.AddHours(12);
@@ -74,7 +73,7 @@ namespace RiasBot.Services
                         {
                             VotesList.Add(vote);
                             if (vote.IsChecked) continue;
-                            
+
                             var userDb = db.Users.FirstOrDefault(x => x.UserId == vote.User);
                             if (userDb != null)
                             {
@@ -94,14 +93,14 @@ namespace RiasBot.Services
                 }
 
                 stw.Stop();
-                await _log.Info($"Votes list loaded: {stw.ElapsedMilliseconds} ms");
+                Log.Information($"Votes list loaded: {stw.ElapsedMilliseconds} ms");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
         }
-        
+
         private async Task RefreshVotes()
         {
             try
@@ -112,10 +111,10 @@ namespace RiasBot.Services
                     http.DefaultRequestHeaders.Add("Authorization", _creds.VotesManagerConfig.Authorization);
                     var votesApi = await http.GetStringAsync($"{_protocol}://{_creds.VotesManagerConfig.WebSocketHost}/api/votes");
                     var dblVotes = JsonConvert.DeserializeObject<DBL>(votesApi);
-                    
+
                     VotesList = new List<Votes>();
                     var votes = dblVotes.Votes.Where(x => x.Type == "upvote").ToList();
-                    
+
                     foreach (var vote in votes)
                     {
                         var date = vote.Date.AddHours(12);
@@ -131,7 +130,7 @@ namespace RiasBot.Services
                 Console.WriteLine(ex);
             }
         }
-        
+
         private async Task AwardVoter(JObject vote)
         {
             using (var db = _db.GetDbContext())
@@ -153,7 +152,7 @@ namespace RiasBot.Services
                 await db.SaveChangesAsync();
             }
         }
-        
+
         private async Task UpdateVote(ulong userId)
         {
             try

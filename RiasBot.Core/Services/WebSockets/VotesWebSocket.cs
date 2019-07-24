@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using RiasBot.Commons.Configs;
+using Serilog;
 
 namespace RiasBot.Services.Websockets
 {
@@ -14,7 +15,6 @@ namespace RiasBot.Services.Websockets
         private ClientWebSocket _webSocket;
         private readonly Uri _hostUri;
         private readonly VotesManagerConfig _config;
-        private readonly RLog _log;
 
         public event Func<JObject, Task> OnReceive;
 
@@ -22,10 +22,9 @@ namespace RiasBot.Services.Websockets
 
         public event Func<Task> OnConnected;
 
-        public VotesWebsocket(VotesManagerConfig config, RLog log)
+        public VotesWebsocket(VotesManagerConfig config)
         {
             _config = config;
-            _log = log;
             var connectionType = config.IsSecureConnection ? "wss" : "ws";
             _hostUri = new Uri($"{connectionType}://{config.WebSocketHost}:{config.WebSocketPort}/{config.UrlParameters}");
         }
@@ -40,7 +39,7 @@ namespace RiasBot.Services.Websockets
                 }
                 catch
                 {
-                    await _log.Error("The VotesWebSocket connection was closed or aborted! Attempting reconnect in 30 seconds");
+                    Log.Error("The VotesWebSocket connection was closed or aborted! Attempting reconnect in 30 seconds");
                     _connected = false;
                     await Task.Delay(30 * 1000);
                     await Connect();
@@ -55,7 +54,7 @@ namespace RiasBot.Services.Websockets
             _webSocket.Options.SetRequestHeader("Authorization", _config.Authorization);
 
             await _webSocket.ConnectAsync(_hostUri, CancellationToken.None);
-            await _log.Info("VotesWebSocket connected");
+            Log.Information("VotesWebSocket connected");
             if (OnConnected != null) await OnConnected.Invoke();
             _connected = true;
             while (_webSocket.State == WebSocketState.Open)
@@ -88,7 +87,7 @@ namespace RiasBot.Services.Websockets
                     if (OnClosed != null)
                         await OnClosed.Invoke(result.CloseStatus, result.CloseStatusDescription);
                     _connected = false;
-                    await _log.Warning("VotesWebSocket disconnected");
+                    Log.Warning("VotesWebSocket disconnected");
                 }
                 else
                 {
