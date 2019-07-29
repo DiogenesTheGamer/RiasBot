@@ -16,7 +16,7 @@ namespace RiasBot
     public class RiasBot
     {
         public const string Author = "Koneko#0001";
-        public const string Version = "2.0.0-alpha6";
+        public const string Version = "2.0.0-alpha6.1";
 
         public static uint ConfirmColor { get; set; }
         public static uint ErrorColor { get; set; }

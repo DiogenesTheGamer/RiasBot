@@ -35,13 +35,13 @@ namespace RiasBot.Modules.Gambling
                 await ReplyErrorAsync("bet_less", 5, _creds.Currency);
                 return;
             }
-            
+
             if (bet > 5000)
             {
                 await ReplyErrorAsync("bet_more", 5000, _creds.Currency);
                 return;
             }
-            
+
             string[] arrow = { "⬆", "↗", "➡", "↘", "⬇", "↙", "⬅", "↖" };
             float[] wheelMultiple = { 1.7f, 2.0f, 1.2f, 0.5f, 0.3f, 0.0f, 0.2f, 1.5f };
             var rnd = new Random((int)DateTime.UtcNow.Ticks);
@@ -65,16 +65,16 @@ namespace RiasBot.Modules.Gambling
                     }
                     else
                     {
-                        await ReplyErrorAsync("currency_not_enough");
+                        await ReplyErrorAsync("currency_not_enough", _creds.Currency);
                     }
                 }
                 else
                 {
-                    await ReplyErrorAsync("currency_not_enough");
+                    await ReplyErrorAsync("currency_not_enough", _creds.Currency);
                 }
             }
         }
-        
+
         [RiasCommand][Aliases]
         [Description][Usages]
         [RequireContext(ContextType.Guild)]
@@ -86,13 +86,13 @@ namespace RiasBot.Modules.Gambling
                 await ReplyErrorAsync("bet_less", 5, _creds.Currency);
                 return;
             }
-            
+
             if (bet > 5000)
             {
                 await ReplyErrorAsync("bet_more", 5000, _creds.Currency);
                 return;
             }
-            
+
             var currency = _blackjackService.GetCurrency((IGuildUser)Context.User);
             if (bet <= currency)
             {
@@ -100,19 +100,19 @@ namespace RiasBot.Modules.Gambling
                 if (bj is null)
                 {
                     bj = _blackjackService.GetOrCreateGame((IGuildUser) Context.User);
-                    await bj.InitializeGameAsync(Context.Guild, Context.Channel, (IGuildUser)Context.User, bet); 
+                    await bj.InitializeGameAsync(Context.Guild, Context.Channel, (IGuildUser)Context.User, bet);
                 }
                 else
                 {
                     await ReplyErrorAsync("blackjack_session", _ch.GetPrefix(Context.Guild));
-                } 
+                }
             }
             else
             {
-                await ReplyErrorAsync("currency_not_enough");
+                await ReplyErrorAsync("currency_not_enough", _creds.Currency);
             }
         }
-        
+
         [RiasCommand][Aliases]
         [Description][Usages]
         [RequireContext(ContextType.Guild)]
