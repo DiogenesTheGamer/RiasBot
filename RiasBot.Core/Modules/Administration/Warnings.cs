@@ -46,12 +46,8 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("cannot_warn_owner");
                     return;
                 }
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_warn_administrator");
-                    return;
-                }
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -114,7 +110,7 @@ namespace RiasBot.Modules.Administration
                             var user = await Context.Guild.GetUserAsync(warnings[index].UserId);
                             if (user != null)
                             {
-                                warnUsers.Add($"{index + 1}. {user}");
+                                warnUsers.Add($"{index + 1}. {user} | {user.Id}");
                                 index++;
                             }
                             else

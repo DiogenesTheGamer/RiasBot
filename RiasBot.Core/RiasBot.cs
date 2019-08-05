@@ -16,7 +16,7 @@ namespace RiasBot
     public class RiasBot
     {
         public const string Author = "Koneko#0001";
-        public const string Version = "2.0.0-alpha6.1";
+        public const string Version = "2.0.0-alpha6.4";
 
         public static uint ConfirmColor { get; set; }
         public static uint ErrorColor { get; set; }
@@ -31,7 +31,7 @@ namespace RiasBot
             var services = new ServiceCollection()
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
-                    LogLevel = LogSeverity.Info
+                    LogLevel = LogSeverity.Verbose
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {

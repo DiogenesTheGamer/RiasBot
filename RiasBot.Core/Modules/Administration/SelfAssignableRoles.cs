@@ -6,6 +6,7 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using RiasBot.Commons.Attributes;
+using RiasBot.Extensions;
 using RiasBot.Services;
 using DBModels = RiasBot.Database.Models;
 
@@ -39,16 +40,15 @@ namespace RiasBot.Modules.Administration
                     {
                         if (db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(y => y.RoleId == role.Id))
                         {
-                            if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
-                            {
-                                var user = (IGuildUser)Context.User;
-                                await user.AddRoleAsync(role);
-                                await ReplyConfirmationAsync("you_are", role.Name);
-                            }
-                            else
+                            if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                             {
                                 await ReplyErrorAsync("sar_above");
+                                return;
                             }
+
+                            var user = (IGuildUser)Context.User;
+                            await user.AddRoleAsync(role);
+                            await ReplyConfirmationAsync("you_are", role.Name);
                         }
                         else
                         {
@@ -75,16 +75,15 @@ namespace RiasBot.Modules.Administration
                     {
                         if (db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(y => y.RoleId == role.Id))
                         {
-                            if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
-                            {
-                                var user = (IGuildUser) Context.User;
-                                await user.RemoveRoleAsync(role);
-                                await ReplyConfirmationAsync("you_are_not", role.Name);
-                            }
-                            else
+                            if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                             {
                                 await ReplyErrorAsync("sar_above");
+                                return;
                             }
+
+                            var user = (IGuildUser) Context.User;
+                            await user.RemoveRoleAsync(role);
+                            await ReplyConfirmationAsync("you_are_not", role.Name);
                         }
                     }
                 }
@@ -102,29 +101,27 @@ namespace RiasBot.Modules.Administration
             {
                 if (!role.IsManaged)
                 {
-                    if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
-                    {
-                        using (var db = _db.GetDbContext())
-                        {
-                            if (!db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(x => x.RoleId == role.Id))
-                            {
-                                var sar = new DBModels.SelfAssignableRoles { GuildId = Context.Guild.Id, RoleName = role.Name, RoleId = role.Id };
-                                await db.AddAsync(sar);
-                                await db.SaveChangesAsync();
-
-                                await ReplyConfirmationAsync("sar_added", role.Name);
-                            }
-                            else
-                            {
-                                await ReplyErrorAsync("sar_in_list", role.Name);
-                            }
-                        }
-                    }
-                    else
+                    if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                     {
                         await ReplyErrorAsync("sar_above");
+                        return;
                     }
 
+                    using (var db = _db.GetDbContext())
+                    {
+                        if (!db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(x => x.RoleId == role.Id))
+                        {
+                            var sar = new DBModels.SelfAssignableRoles { GuildId = Context.Guild.Id, RoleName = role.Name, RoleId = role.Id };
+                            await db.AddAsync(sar);
+                            await db.SaveChangesAsync();
+
+                            await ReplyConfirmationAsync("sar_added", role.Name);
+                        }
+                        else
+                        {
+                            await ReplyErrorAsync("sar_in_list", role.Name);
+                        }
+                    }
                 }
                 else
                 {
@@ -237,7 +234,7 @@ namespace RiasBot.Modules.Administration
                     }
                     await db.SaveChangesAsync();
                 }
-                
+
                 await ReplyConfirmationAsync("lsar_updated");
             }
         }

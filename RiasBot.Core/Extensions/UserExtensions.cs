@@ -1,6 +1,7 @@
-using System.Linq;
+using System;
 using Discord;
 using Discord.Rest;
+using Discord.WebSocket;
 
 namespace RiasBot.Extensions
 {
@@ -51,25 +52,31 @@ namespace RiasBot.Extensions
             return $"{DiscordConfig.CDNUrl}embed/avatars/{user.DiscriminatorValue % 5}.png";
         }
 
-        /// <summary> Check the hierarchy roles between the bot and an user.
-        /// returns true - if the user is below the bot; false - if the user is above the bot
+        /// <summary> Check the hierarchy between the current user and another user in the roles hierarchy.<br/>
+        /// returns true - if the user is above or equal with the other user;
+        /// false - if the user is below the other user
         /// </summary>
-        public static bool CheckHierarchyRoles(IGuild guild, IGuildUser user, IGuildUser bot)
+        public static bool CheckHierarchy(this IGuildUser userOne, IGuildUser userTwo)
         {
-            var userRoles = user.RoleIds.Select(guild.GetRole).ToList();
-            var botRoles = bot.RoleIds.Select(guild.GetRole).ToList();
+            if (!(userOne is SocketGuildUser socketGuildUserOne))
+                throw new InvalidCastException("The current IGuildUser user is not SocketGuildUser.");
 
-            return botRoles.Any(x => userRoles.All(y => x.Position > y.Position));
+            if (!(userTwo is SocketGuildUser socketGuildUserTwo))
+                throw new InvalidCastException("The IGuildUser user to check is not SocketGuildUser.");
+
+            return socketGuildUserOne.Hierarchy >= socketGuildUserTwo.Hierarchy;
         }
 
-        /// <summary> Check the hierarchy roles between the bot and a role.
-        /// returns true - if the role is below the bot; false - if the role is above the bot
+        /// <summary> Check the hierarchy roles between the current user and a role.<br/>
+        /// returns true - if the role's position is above or equal with the user's hierarchy;
+        /// false - if the role's position is below the user's hierarchy
         /// </summary>
-        public static bool CheckHierarchyRoles(IRole role, IGuild guild, IGuildUser bot)
+        public static bool CheckHierarchyRole(this IGuildUser user, IRole role)
         {
-            var botRoles = bot.RoleIds.Select(guild.GetRole).ToList();
+            if (!(user is SocketGuildUser socketGuildUser))
+                throw new InvalidCastException("The IGuildUser user is not SocketGuildUser.");
 
-            return botRoles.Any(x => x.Position > role.Position);
+            return socketGuildUser.Hierarchy >= role.Position;
         }
     }
 }

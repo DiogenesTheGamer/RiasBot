@@ -8,6 +8,7 @@ using Discord.Commands;
 using RiasBot.Commons.Attributes;
 using RiasBot.Services;
 using RiasBot.Database.Models;
+using RiasBot.Extensions;
 
 namespace RiasBot.Modules.Administration
 {
@@ -75,22 +76,21 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task DeleteRoleAsync([Remainder]IRole role)
             {
-                if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                 {
-                    if (!role.IsManaged)
-                    {
-                        var roleName = role.Name;
-                        await role.DeleteAsync();
-                        await ReplyConfirmationAsync("role_deleted", roleName);
-                    }
-                    else
-                    {
-                        await ReplyErrorAsync("role_not_deleted", role.Name);
-                    }
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (!role.IsManaged)
+                {
+                    var roleName = role.Name;
+                    await role.DeleteAsync();
+                    await ReplyConfirmationAsync("role_deleted", roleName);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await ReplyErrorAsync("role_not_deleted", role.Name);
                 }
             }
 
@@ -107,26 +107,26 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("invalid_hex_color");
                     return;
                 }
-                if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
+
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                 {
-                    if (int.TryParse(color.Substring(0, 2), NumberStyles.HexNumber, null, out var redColor) &&
-                        int.TryParse(color.Substring(2, 2), NumberStyles.HexNumber, null, out var greenColor) &&
-                        int.TryParse(color.Substring(4, 2), NumberStyles.HexNumber, null, out var blueColor))
-                    {
-                        var red = Convert.ToByte(redColor);
-                        var green = Convert.ToByte(greenColor);
-                        var blue = Convert.ToByte(blueColor);
-                        await role.ModifyAsync(r => r.Color = new Color(red, green, blue));
-                        await ReplyConfirmationAsync("role_color_changed", role.Name);
-                    }
-                    else
-                    {
-                        await ReplyErrorAsync("invalid_hex_color");
-                    }
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (int.TryParse(color.Substring(0, 2), NumberStyles.HexNumber, null, out var redColor) &&
+                    int.TryParse(color.Substring(2, 2), NumberStyles.HexNumber, null, out var greenColor) &&
+                    int.TryParse(color.Substring(4, 2), NumberStyles.HexNumber, null, out var blueColor))
+                {
+                    var red = Convert.ToByte(redColor);
+                    var green = Convert.ToByte(greenColor);
+                    var blue = Convert.ToByte(blueColor);
+                    await role.ModifyAsync(r => r.Color = new Color(red, green, blue));
+                    await ReplyConfirmationAsync("role_color_changed", role.Name);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await ReplyErrorAsync("invalid_hex_color");
                 }
             }
 
@@ -144,16 +144,15 @@ namespace RiasBot.Modules.Administration
                 var oldRole = Context.Guild.Roles.First(r => string.Equals(r.Name, oldName, StringComparison.InvariantCultureIgnoreCase));
                 if (oldRole != null)
                 {
-                    if (Extensions.UserExtensions.CheckHierarchyRoles(oldRole, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
-                    {
-                        oldName = oldRole.Name;
-                        await oldRole.ModifyAsync(r => r.Name = newName);
-                        await ReplyConfirmationAsync("role_renamed", oldName, newName);
-                    }
-                    else
+                    if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(oldRole))
                     {
                         await ReplyErrorAsync("role_above");
+                        return;
                     }
+
+                    oldName = oldRole.Name;
+                    await oldRole.ModifyAsync(r => r.Name = newName);
+                    await ReplyConfirmationAsync("role_renamed", oldName, newName);
                 }
                 else
                 {
@@ -168,21 +167,20 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task SetRoleAsync(IGuildUser user, [Remainder]IRole role)
             {
-                if (Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                 {
-                    if (!role.IsManaged)
-                    {
-                        await user.AddRoleAsync(role);
-                        await ReplyConfirmationAsync("role_set", role.Name, user);
-                    }
-                    else
-                    {
-                        await ReplyErrorAsync("role_not_set", role.Name);
-                    }
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (!role.IsManaged)
+                {
+                    await user.AddRoleAsync(role);
+                    await ReplyConfirmationAsync("role_set", role.Name, user);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await ReplyErrorAsync("role_not_set", role.Name);
                 }
             }
 
@@ -193,14 +191,20 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task RemoveRoleAsync(IGuildUser user, [Remainder]IRole role)
             {
-                if (Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                {
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (!role.IsManaged)
                 {
                     await user.RemoveRoleAsync(role);
                     await ReplyConfirmationAsync("role_removed", role.Name, user);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await ReplyErrorAsync("role_not_removed");
                 }
             }
 
@@ -265,22 +269,21 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task HoistRoleAsync([Remainder]IRole role)
             {
-                if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                 {
-                    if (role.IsHoisted)
-                    {
-                        await role.ModifyAsync(x => x.Hoist = false);
-                        await ReplyConfirmationAsync("role_not_displayed", role.Name);
-                    }
-                    else
-                    {
-                        await role.ModifyAsync(x => x.Hoist = true);
-                        await ReplyConfirmationAsync("role_displayed", role.Name);
-                    }
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (role.IsHoisted)
+                {
+                    await role.ModifyAsync(x => x.Hoist = false);
+                    await ReplyConfirmationAsync("role_not_displayed", role.Name);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await role.ModifyAsync(x => x.Hoist = true);
+                    await ReplyConfirmationAsync("role_displayed", role.Name);
                 }
             }
 
@@ -291,22 +294,21 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task MentionRoleAsync([Remainder]IRole role)
             {
-                if (Extensions.UserExtensions.CheckHierarchyRoles(role, Context.Guild, await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
                 {
-                    if (role.IsMentionable)
-                    {
-                        await role.ModifyAsync(x => x.Mentionable = false);
-                        await ReplyConfirmationAsync("role_not_mentionable", role.Name);
-                    }
-                    else
-                    {
-                        await role.ModifyAsync(x => x.Mentionable = true);
-                        await ReplyConfirmationAsync("role_mentionable", role.Name);
-                    }
+                    await ReplyErrorAsync("role_above");
+                    return;
+                }
+
+                if (role.IsMentionable)
+                {
+                    await role.ModifyAsync(x => x.Mentionable = false);
+                    await ReplyConfirmationAsync("role_not_mentionable", role.Name);
                 }
                 else
                 {
-                    await ReplyErrorAsync("role_above");
+                    await role.ModifyAsync(x => x.Mentionable = true);
+                    await ReplyConfirmationAsync("role_mentionable", role.Name);
                 }
             }
         }

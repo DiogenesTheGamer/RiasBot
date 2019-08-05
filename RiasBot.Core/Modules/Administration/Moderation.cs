@@ -38,12 +38,8 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("cannot_kick_owner");
                     return;
                 }
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_kick_administrator");
-                    return;
-                }
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -69,12 +65,8 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("cannot_ban_owner");
                     return;
                 }
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_ban_administrator");
-                    return;
-                }
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -100,12 +92,8 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("cannot_softban_owner");
                     return;
                 }
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_softban_administrator");
-                    return;
-                }
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -132,12 +120,8 @@ namespace RiasBot.Modules.Administration
                     await ReplyErrorAsync("cannot_pruneban_owner");
                     return;
                 }
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_pruneban_administrator");
-                    return;
-                }
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;

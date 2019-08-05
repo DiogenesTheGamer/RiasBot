@@ -12,7 +12,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CoreCLR-NCalc" Version="2.2.51" />
-        <PackageReference Include="Discord.Net" Version="2.2.0-dev-20190612.2" />
+        <PackageReference Include="Discord.Net" Version="2.2.0-dev-20190730.2" />
         <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.9.0.2" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="2.11.0-beta1-final" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.2" />

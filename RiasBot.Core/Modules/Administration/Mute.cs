@@ -6,6 +6,7 @@ using RiasBot.Commons.Attributes;
 using RiasBot.Modules.Administration.Services;
 using RiasBot.Services;
 using RiasBot.Database.Models;
+using RiasBot.Extensions;
 
 namespace RiasBot.Modules.Administration
 {
@@ -38,13 +39,7 @@ namespace RiasBot.Modules.Administration
                     return;
                 }
 
-                if (user.GuildPermissions.Administrator)
-                {
-                    await ReplyErrorAsync("cannot_mute_administrator");
-                    return;
-                }
-
-                if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -67,7 +62,7 @@ namespace RiasBot.Modules.Administration
                     return;
                 if (user.Id != Context.Guild.OwnerId)
                 {
-                    if (!Extensions.UserExtensions.CheckHierarchyRoles(Context.Guild, user, await Context.Guild.GetCurrentUserAsync()))
+                    if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
                     {
                         await ReplyErrorAsync("user_above");
                         return;
@@ -100,6 +95,7 @@ namespace RiasBot.Modules.Administration
                         var muteRole = new GuildConfig { GuildId = Context.Guild.Id, MuteRole = role.Id };
                         await db.AddAsync(muteRole);
                     }
+
                     await db.SaveChangesAsync();
                     await ReplyConfirmationAsync("new_mute_role_set");
                     _ = Task.Run(async () => await Service.AddMuteRoleToChannelsAsync(role, Context.Guild));

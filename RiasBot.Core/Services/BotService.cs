@@ -21,7 +21,6 @@ namespace RiasBot.Services
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
         private readonly LavaShardClient _lavaShardClient;
-        private readonly LoggingService _loggingService;
 
         private Timer DblTimer { get; }
 
@@ -33,14 +32,12 @@ namespace RiasBot.Services
         private int _shardsConnected;
         private int _recommendedShardCount;
 
-        public BotService(DiscordShardedClient client, IBotCredentials creds, DbService db, LoggingService loggingService,
-            LavaShardClient lavaShardClient)
+        public BotService(DiscordShardedClient client, IBotCredentials creds, DbService db, LavaShardClient lavaShardClient)
         {
             _client = client;
             _creds = creds;
             _db = db;
             _lavaShardClient = lavaShardClient;
-            _loggingService = loggingService;
 
             _client.ShardConnected += ShardConnected;
             _client.UserJoined += UserJoinedAsync;
@@ -198,7 +195,7 @@ namespace RiasBot.Services
                 var aar = guildUser.Guild.GetRole(guildDb.AutoAssignableRole);
                 if (aar is null) return;
 
-                if (Extensions.UserExtensions.CheckHierarchyRoles(aar, guildUser.Guild, currentUser))
+                if (!currentUser.CheckHierarchyRole(aar))
                     await guildUser.AddRoleAsync(aar);
             }
         }
