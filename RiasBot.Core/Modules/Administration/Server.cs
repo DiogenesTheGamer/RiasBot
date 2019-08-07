@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using RiasBot.Commons.Attributes;
+using RiasBot.Extensions;
 
 namespace RiasBot.Modules.Administration
 {
@@ -18,22 +19,27 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageNicknames)]
             public async Task SetNicknameAsync(IGuildUser user, [Remainder]string name = null)
             {
-                if (Context.Guild.OwnerId != user.Id)
+                if (user.Id == Context.Guild.OwnerId)
                 {
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        await user.ModifyAsync(x => x.Nickname = name);
-                        await ReplyConfirmationAsync("nickname_removed", user, user.Username);
-                    }
-                    else
-                    {
-                        await user.ModifyAsync(x => x.Nickname = name);
-                        await ReplyConfirmationAsync("nickname_changed", user, name);
-                    }
+                    await ReplyErrorAsync("nickname_owner");
+                    return;
+                }
+
+                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
+                {
+                    await ReplyErrorAsync("user_above");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(name))
+                {
+                    await user.ModifyAsync(x => x.Nickname = name);
+                    await ReplyConfirmationAsync("nickname_removed", user, user.Username);
                 }
                 else
                 {
-                    await ReplyErrorAsync("nickname_owner");
+                    await user.ModifyAsync(x => x.Nickname = name);
+                    await ReplyConfirmationAsync("nickname_changed", user, name);
                 }
             }
 
@@ -62,7 +68,7 @@ namespace RiasBot.Modules.Administration
                         var stream = await http.GetStreamAsync(new Uri(url));
                         await Context.Guild.ModifyAsync(x => x.Icon = new Image(stream));
                     }
-                    
+
                     await ReplyConfirmationAsync("server_icon_changed");
                 }
                 catch

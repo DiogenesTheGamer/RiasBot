@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,30 +6,27 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.EntityFrameworkCore;
 using RiasBot.Commons.Attributes;
 using RiasBot.Extensions;
 using RiasBot.Modules.Music.Services;
 using RiasBot.Services;
+using BotService = RiasBot.Modules.Bot.Services.BotService;
 
 namespace RiasBot.Modules.Bot
 {
-    public partial class Bot : RiasModule
+    public partial class Bot : RiasModule<BotService>
     {
         private readonly DiscordShardedClient _client;
-        private readonly IServiceProvider _services;
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
         private readonly InteractiveService _is;
         private readonly VotesService _votesService;
         private readonly MusicService _musicService;
 
-        public Bot(DiscordShardedClient client, IServiceProvider services, DbService db,
-            IBotCredentials creds, InteractiveService interactiveService, VotesService votesService, MusicService musicService)
+        public Bot(DiscordShardedClient client, DbService db, IBotCredentials creds,
+            InteractiveService interactiveService, VotesService votesService, MusicService musicService)
         {
-            _services = services;
             _db = db;
             _creds = creds;
             _client = client;
@@ -86,7 +82,7 @@ namespace RiasBot.Modules.Bot
             {
                 await _musicService.StopAsync(musicPlayer.Guild, false);
             }
-            
+
             await ReplyConfirmationAsync("update");
             Environment.Exit(0);
         }
@@ -337,45 +333,50 @@ namespace RiasBot.Modules.Bot
         [RiasCommand][Aliases]
         [Description][Usages]
         [RequireOwner]
-        public async Task EvaluateAsync([Remainder]string expression)
+        //this commands doesn't use the translation strings, lazy, they will be added later
+        public async Task EvaluateAsync([Remainder]string code)
         {
-            var globals = new Globals
-            {
-                Context = Context,
-                Client = _client,
-                Services = _services,
-                Db = _db
-            };
-            var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor);
-            try
-            {
-                var result = await CSharpScript.EvaluateAsync(expression,
-                    ScriptOptions.Default.WithReferences(typeof(RiasBot).Assembly)
-                        .WithImports("System", "System.Collections.Generic", "System.Linq", "Discord", "System.Threading.Tasks", "System.Text",
-                            "Discord.WebSocket", "RiasBot.Extensions"), globals);
+            var embed = new EmbedBuilder()
+                .WithColor(_creds.ConfirmColor)
+                .WithAuthor("Roslyn Compiler", Context.User.GetRealAvatarUrl())
+                .WithDescription("Evaluating the C# code")
+                .WithTimestamp(DateTimeOffset.UtcNow);
 
-                embed.WithAuthor("Success", Context.User.GetRealAvatarUrl());
-                embed.AddField("Code", Format.Code(expression, "csharp"));
-                if (result != null)
+            var message = await Context.Channel.SendMessageAsync(embed: embed.Build());
+            var evaluation = await Service.EvaluateAsync(Context, code);
+
+            if (evaluation is null)
+            {
+                await message.DeleteAsync();
+                return;
+            }
+
+            embed.AddField("Code", Format.Code(evaluation.Code, "csharp"));
+            if (evaluation.Success)
+            {
+                embed.WithDescription("Code evaluated");
+                embed.AddField(evaluation.ReturnType, Format.Code(evaluation.Result, "csharp"));
+                embed.AddField("Compilation Time", $"{evaluation.CompilationTime.TotalMilliseconds} ms", true);
+                embed.AddField("Execution Time", $"{evaluation.ExecutionTime.TotalMilliseconds} ms", true);
+            }
+            else
+            {
+                if (evaluation.IsCompiled)
                 {
-                    var resultMessage = result.ToString();
-                    if (result is IEnumerable enumerable)
-                    {
-                        var enumType = enumerable.GetType();
-                        resultMessage = $"{enumType.Name}<{string.Join(", ", enumType.GenericTypeArguments.Select(t => t.Name))}> " +
-                                        $"{{{string.Join(", ", enumerable.Cast<object>())}}}";
-                    }
-
-                    embed.AddField("Result", Format.Code(resultMessage, "csharp"));
-                    await Context.Channel.SendMessageAsync(embed: embed.Build());
+                    embed.WithDescription("Code compiled but threw an error on execution.");
+                    embed.AddField("Exception", Format.Code(evaluation.Exception));
+                    embed.AddField("Compilation time", $"{evaluation.CompilationTime.TotalMilliseconds} ms", true);
+                    embed.AddField("Execution time", $"{evaluation.ExecutionTime.TotalMilliseconds} ms", true);
+                }
+                else
+                {
+                    embed.WithDescription("Code threw an error on compilation");
+                    embed.AddField("Exception", Format.Code(evaluation.Exception));
+                    embed.AddField("Compilation time", $"{evaluation.CompilationTime.TotalMilliseconds} ms", true);
                 }
             }
-            catch (Exception e)
-            {
-                embed.WithAuthor("Failed", Context.User.GetRealAvatarUrl());
-                embed.AddField("CompilationErrorException", Format.Code(e.Message, "csharp"));
-                await Context.Channel.SendMessageAsync(embed: embed.Build());
-            }
+
+            await message.ModifyAsync(m => m.Embed = embed.Build());
         }
 
         [RiasCommand][Aliases]
@@ -435,14 +436,6 @@ namespace RiasBot.Modules.Bot
             var guild = await Context.Client.GetGuildAsync(guildId);
             await guild.DownloadUsersAsync();
             await ReplyConfirmationAsync("users_downloaded", guild.Name);
-        }
-        
-        public class Globals
-        {
-            public ICommandContext Context { get; set; }
-            public DiscordShardedClient Client { get; set; }
-            public IServiceProvider Services { get; set; }
-            public DbService Db { get; set; }
         }
     }
 }
