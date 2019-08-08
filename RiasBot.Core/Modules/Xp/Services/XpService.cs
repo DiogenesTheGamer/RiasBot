@@ -126,7 +126,7 @@ namespace RiasBot.Modules.Xp.Services
                     var role = user.Guild.GetRole(roleReward.RoleId);
                     if (role != null)
                     {
-                        if (!currentUser.CheckHierarchyRole(role))
+                        if (currentUser.CheckRoleHierarchy(role) > 0)
                             await user.AddRoleAsync(role);
                     }
                     else

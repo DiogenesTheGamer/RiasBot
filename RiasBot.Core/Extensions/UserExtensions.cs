@@ -52,11 +52,15 @@ namespace RiasBot.Extensions
             return $"{DiscordConfig.CDNUrl}embed/avatars/{user.DiscriminatorValue % 5}.png";
         }
 
-        /// <summary> Check the hierarchy between the current user and another user in the roles hierarchy.<br/>
-        /// returns true - if the user is above or equal with the other user;
-        /// false - if the user is below the other user
+        /// <summary>
+        /// Check the hierarchy between the current user and another user in the roles hierarchy
         /// </summary>
-        public static bool CheckHierarchy(this IGuildUser userOne, IGuildUser userTwo)
+        /// <returns>A value lower than 0 if the current user is below the other user<br/>
+        /// A value equal with 0 if both users are in the highest role<br/>
+        /// A value greater than 0 if current user is above the other user<br/>
+        /// The value returned is the difference between their highest role position</returns>
+        /// <exception cref="InvalidCastException">It is thrown if the <see cref="IGuildUser"/> is not <see cref="SocketGuildUser"/></exception>
+        public static int CheckHierarchy(this IGuildUser userOne, IGuildUser userTwo)
         {
             if (!(userOne is SocketGuildUser socketGuildUserOne))
                 throw new InvalidCastException("The current IGuildUser user is not SocketGuildUser.");
@@ -64,19 +68,23 @@ namespace RiasBot.Extensions
             if (!(userTwo is SocketGuildUser socketGuildUserTwo))
                 throw new InvalidCastException("The IGuildUser user to check is not SocketGuildUser.");
 
-            return socketGuildUserOne.Hierarchy >= socketGuildUserTwo.Hierarchy;
+            return socketGuildUserOne.Hierarchy - socketGuildUserTwo.Hierarchy;
         }
 
-        /// <summary> Check the hierarchy roles between the current user and a role.<br/>
-        /// returns true - if the role's position is above or equal with the user's hierarchy;
-        /// false - if the role's position is below the user's hierarchy
+        /// <summary>
+        /// Check the hierarchy between the current user and a role in the roles hierarchy
         /// </summary>
-        public static bool CheckHierarchyRole(this IGuildUser user, IRole role)
+        /// <returns>A value lower than 0 if the current user's highest role is below the role<br/>
+        /// A value equal with 0 if the current user's highest role is the role that is checked<br/>
+        /// A value greater than 0 if current user's highest role is above the role<br/>
+        /// The value returned is the difference between the user's highest role position and the role's position</returns>
+        /// <exception cref="InvalidCastException">It is thrown if the <see cref="IGuildUser"/> is not <see cref="SocketGuildUser"/></exception>
+        public static int CheckRoleHierarchy(this IGuildUser user, IRole role)
         {
             if (!(user is SocketGuildUser socketGuildUser))
                 throw new InvalidCastException("The IGuildUser user is not SocketGuildUser.");
 
-            return socketGuildUser.Hierarchy >= role.Position;
+            return socketGuildUser.Hierarchy - role.Position;
         }
     }
 }

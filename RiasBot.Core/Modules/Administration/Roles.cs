@@ -76,7 +76,7 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task DeleteRoleAsync([Remainder]IRole role)
             {
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;
@@ -108,7 +108,7 @@ namespace RiasBot.Modules.Administration
                     return;
                 }
 
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;
@@ -144,7 +144,7 @@ namespace RiasBot.Modules.Administration
                 var oldRole = Context.Guild.Roles.First(r => string.Equals(r.Name, oldName, StringComparison.InvariantCultureIgnoreCase));
                 if (oldRole != null)
                 {
-                    if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(oldRole))
+                    if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(oldRole) <= 0)
                     {
                         await ReplyErrorAsync("role_above");
                         return;
@@ -167,7 +167,7 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task SetRoleAsync(IGuildUser user, [Remainder]IRole role)
             {
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;
@@ -191,7 +191,7 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task RemoveRoleAsync(IGuildUser user, [Remainder]IRole role)
             {
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;
@@ -269,7 +269,7 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task HoistRoleAsync([Remainder]IRole role)
             {
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;
@@ -294,7 +294,7 @@ namespace RiasBot.Modules.Administration
             [RequireBotPermission(GuildPermission.ManageRoles)]
             public async Task MentionRoleAsync([Remainder]IRole role)
             {
-                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                 {
                     await ReplyErrorAsync("role_above");
                     return;

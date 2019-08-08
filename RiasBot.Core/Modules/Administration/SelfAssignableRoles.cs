@@ -40,7 +40,7 @@ namespace RiasBot.Modules.Administration
                     {
                         if (db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(y => y.RoleId == role.Id))
                         {
-                            if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                            if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                             {
                                 await ReplyErrorAsync("sar_above");
                                 return;
@@ -75,7 +75,7 @@ namespace RiasBot.Modules.Administration
                     {
                         if (db.SelfAssignableRoles.Where(x => x.GuildId == Context.Guild.Id).Any(y => y.RoleId == role.Id))
                         {
-                            if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                            if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                             {
                                 await ReplyErrorAsync("sar_above");
                                 return;
@@ -101,7 +101,7 @@ namespace RiasBot.Modules.Administration
             {
                 if (!role.IsManaged)
                 {
-                    if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchyRole(role))
+                    if ((await Context.Guild.GetCurrentUserAsync()).CheckRoleHierarchy(role) <= 0)
                     {
                         await ReplyErrorAsync("sar_above");
                         return;

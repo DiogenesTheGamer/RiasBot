@@ -39,7 +39,7 @@ namespace RiasBot.Modules.Administration
                     return;
                 }
 
-                if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
+                if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchy(user) <= 0)
                 {
                     await ReplyErrorAsync("user_above");
                     return;
@@ -62,7 +62,7 @@ namespace RiasBot.Modules.Administration
                     return;
                 if (user.Id != Context.Guild.OwnerId)
                 {
-                    if (user.CheckHierarchy(await Context.Guild.GetCurrentUserAsync()))
+                    if ((await Context.Guild.GetCurrentUserAsync()).CheckHierarchy(user) <= 0)
                     {
                         await ReplyErrorAsync("user_above");
                         return;

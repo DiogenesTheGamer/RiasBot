@@ -195,7 +195,7 @@ namespace RiasBot.Services
                 var aar = guildUser.Guild.GetRole(guildDb.AutoAssignableRole);
                 if (aar is null) return;
 
-                if (!currentUser.CheckHierarchyRole(aar))
+                if (currentUser.CheckRoleHierarchy(aar) > 0)
                     await guildUser.AddRoleAsync(aar);
             }
         }
