@@ -17,7 +17,7 @@ namespace RiasBot
 #if DEBUG
                 .MinimumLevel.Verbose()
 #endif
-                .WriteTo.Console(theme: SystemConsoleTheme.Colored)
+                .WriteTo.Console(theme: SystemConsoleTheme.Literate)
                 .WriteTo.Async(x => x.File(LogPath, shared: true, rollingInterval: RollingInterval.Day))
                 .CreateLogger();
 

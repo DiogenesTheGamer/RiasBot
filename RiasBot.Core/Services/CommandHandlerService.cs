@@ -57,23 +57,23 @@ namespace RiasBot.Services
                     guildDb = db.Guilds.FirstOrDefault(x => x.GuildId == textChannel.Guild.Id);
                     if (guildDb != null && !string.IsNullOrWhiteSpace(guildDb.Prefix))
                         prefix = guildDb.Prefix;
-                    
+
                     var userDb = db.Users.FirstOrDefault(x => x.UserId == userMessage.Author.Id);
-                    
+
                     _ = Task.Run(async () => await GiveXpAsync(userMessage, textChannel.Guild, userDb?.IsBlacklisted));
                     if (userDb != null && userDb.IsBanned)
                         return;
                 }
             }
-            
+
             _ = Task.Run(async () => await _botService.AddAssignableRoleAsync(userMessage.Author));
 
             var argPos = 0;
             if (!(userMessage.HasStringPrefix(prefix, ref argPos) ||
                   userMessage.HasStringPrefix($"{_client.CurrentUser.Username} ", ref argPos, StringComparison.InvariantCultureIgnoreCase) ||
-                  userMessage.HasMentionPrefix(_client.CurrentUser, ref argPos))) 
+                  userMessage.HasMentionPrefix(_client.CurrentUser, ref argPos)))
                 return;
-            
+
             var context = new ShardedCommandContext(_client, userMessage);
             var socketGuildUser = context.Guild?.CurrentUser;
             if (socketGuildUser != null)
@@ -90,7 +90,7 @@ namespace RiasBot.Services
 
             if (result.IsSuccess)
                 RiasBot.CommandsExecuted++;
-            
+
             if (result.Error == CommandError.UnmetPrecondition)
                 _ = Task.Run(async () => await SendErrorResultAsync(context, userMessage, result));
         }

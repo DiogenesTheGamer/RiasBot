@@ -61,7 +61,7 @@ namespace RiasBot.Services
         {
             if (!commandInfo.IsSpecified) return Task.CompletedTask;
 
-            Log.Information($"{DateTime.UtcNow:MMM dd hh:mm:ss} [Command] \"{commandInfo.Value?.Name}\"\n" +
+            Log.Information($"[Command] \"{commandInfo.Value?.Name}\"\n" +
                                        $"\t\t[Arguments] \"{CommandArguments}\"\n" +
                                        $"\t\t[User] \"{context.User}\" ({context.User.Id})\n" +
                                        $"\t\t[Channel] \"{context.Channel.Name}\" ({context.Channel.Id})\n" +

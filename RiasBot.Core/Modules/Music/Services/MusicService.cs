@@ -154,6 +154,12 @@ namespace RiasBot.Modules.Music.Services
 
         public async Task PlayAsync(ShardedCommandContext context, IVoiceChannel voiceChannel, string url)
         {
+            if (_lavaShardClient is null)
+            {
+                await ReplyConfirmationAsync(context.Channel, voiceChannel.GuildId, LowerModuleTypeName, "lavalink_not_ready");
+                return;
+            }
+
             MusicSearchResult searchResult;
             try
             {

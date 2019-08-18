@@ -264,6 +264,7 @@
   "music_output_channel_no_view_perm": "I cannot view the music output channel **{0}**.",
   "music_output_channel_commands": "The music commands can be used only from the channel where the music player has started (except `play` and `stop` commands).",
   "music_new_output_channel": "This channel is now the new music output channel.",
+  "music_lavalink_not_ready": "The program just started, Lavalink server is not ready, please wait few minutes.",
   "music_search_tracks_error": "Something went wrong when trying to get the tracks. If this still continue, please report in the [Support Server]({0})!",
   "music_no_tracks_found": "I couldn't find any track.",
   "music_no_track_found": "I couldn't find the track.",
