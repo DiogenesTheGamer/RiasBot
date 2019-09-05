@@ -46,7 +46,7 @@ namespace RiasBot.Modules.Administration
                 }
 
                 await SendMessageAsync(user, "user_kicked", "kicked_from", reason);
-                await user.KickAsync();
+                await user.KickAsync(reason);
             }
 
             [RiasCommand]
@@ -73,7 +73,7 @@ namespace RiasBot.Modules.Administration
                 }
 
                 await SendMessageAsync(user, "user_banned", "banned_from", reason);
-                await Context.Guild.AddBanAsync(user);
+                await Context.Guild.AddBanAsync(user, reason: reason);
             }
 
             [RiasCommand]
@@ -100,7 +100,7 @@ namespace RiasBot.Modules.Administration
                 }
 
                 await SendMessageAsync(user, "user_soft_banned", "kicked_from", reason);
-                await Context.Guild.AddBanAsync(user, 7);
+                await Context.Guild.AddBanAsync(user, 7, reason);
                 await Context.Guild.RemoveBanAsync(user);
             }
 
@@ -128,7 +128,7 @@ namespace RiasBot.Modules.Administration
                 }
 
                 await SendMessageAsync(user, "user_banned", "banned_from", reason);
-                await Context.Guild.AddBanAsync(user, 7);
+                await Context.Guild.AddBanAsync(user, 7, reason);
             }
 
             [RiasCommand]
