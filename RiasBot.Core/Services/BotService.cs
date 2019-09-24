@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Lavalink4NET;
-using Lavalink4NET.Tracking;
 using Microsoft.Extensions.DependencyInjection;
 using RiasBot.Commons.Attributes;
 using RiasBot.Database.Models;
 using RiasBot.Extensions;
 using RiasBot.Modules.Music.Commons;
+using RiasBot.Modules.Music.Services;
 using Serilog;
 
 namespace RiasBot.Services
@@ -201,6 +201,9 @@ namespace RiasBot.Services
         {
             foreach (var guild in client.Guilds)
             {
+                var musicService = _services.GetRequiredService<MusicService>();
+                if (!musicService.LavalinkOk) continue;
+
                 var player = _audioService.GetPlayer<MusicPlayer>(guild.Id);
                 if (player != null)
                     await player.LeaveAndDisposeAsync(false);
