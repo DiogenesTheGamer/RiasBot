@@ -6,10 +6,11 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Lavalink4NET;
 using Microsoft.EntityFrameworkCore;
 using RiasBot.Commons.Attributes;
 using RiasBot.Extensions;
-using RiasBot.Modules.Music.Services;
+using RiasBot.Modules.Music.Commons;
 using RiasBot.Services;
 using BotService = RiasBot.Modules.Bot.Services.BotService;
 
@@ -22,17 +23,17 @@ namespace RiasBot.Modules.Bot
         private readonly DbService _db;
         private readonly InteractiveService _is;
         private readonly VotesService _votesService;
-        private readonly MusicService _musicService;
+        private readonly IAudioService _audioService;
 
         public Bot(DiscordShardedClient client, DbService db, IBotCredentials creds,
-            InteractiveService interactiveService, VotesService votesService, MusicService musicService)
+            InteractiveService interactiveService, VotesService votesService, IAudioService audioService)
         {
             _db = db;
             _creds = creds;
             _client = client;
             _is = interactiveService;
             _votesService = votesService;
-            _musicService = musicService;
+            _audioService = audioService;
         }
 
         [RiasCommand][Aliases]
@@ -78,9 +79,9 @@ namespace RiasBot.Modules.Bot
         [RequireOwner]
         public async Task UpdateAsync()
         {
-            foreach (var musicPlayer in _musicService.MusicPlayers.Values)
+            foreach (var musicPlayer in _audioService.GetPlayers<MusicPlayer>())
             {
-                await _musicService.StopAsync(musicPlayer.Guild, false);
+                await musicPlayer.LeaveAndDisposeAsync(false);
             }
 
             await ReplyConfirmationAsync("update");

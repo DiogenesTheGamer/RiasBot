@@ -7,10 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Lavalink4NET;
+using Lavalink4NET.Tracking;
+using Microsoft.Extensions.DependencyInjection;
 using RiasBot.Commons.Attributes;
 using RiasBot.Database.Models;
 using RiasBot.Extensions;
-using Victoria;
+using RiasBot.Modules.Music.Commons;
+using Serilog;
 
 namespace RiasBot.Services
 {
@@ -18,9 +22,10 @@ namespace RiasBot.Services
     public class BotService
     {
         private readonly DiscordShardedClient _client;
+        private readonly IAudioService _audioService;
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
-        private readonly LavaShardClient _lavaShardClient;
+        private readonly IServiceProvider _services;
 
         private Timer DblTimer { get; }
 
@@ -32,14 +37,16 @@ namespace RiasBot.Services
         private int _shardsConnected;
         private int _recommendedShardCount;
 
-        public BotService(DiscordShardedClient client, IBotCredentials creds, DbService db, LavaShardClient lavaShardClient)
+        public BotService(DiscordShardedClient client, IAudioService audioService, IBotCredentials creds, DbService db, IServiceProvider services)
         {
             _client = client;
+            _audioService = audioService;
             _creds = creds;
             _db = db;
-            _lavaShardClient = lavaShardClient;
+            _services = services;
 
-            _client.ShardConnected += ShardConnected;
+            _client.ShardConnected += ShardConnectedAsync;
+            _client.ShardDisconnected += ShardDisconnectedAsync;
             _client.UserJoined += UserJoinedAsync;
             _client.UserLeft += UserLeftAsync;
 
@@ -54,6 +61,9 @@ namespace RiasBot.Services
 
         private async Task UserJoinedAsync(SocketGuildUser user)
         {
+            if (user.Id == _client.CurrentUser.Id)
+                return;
+
             _ = Task.Run(async() => await AddAssignableRoleAsync(user));
 
             using (var db = _db.GetDbContext())
@@ -103,6 +113,16 @@ namespace RiasBot.Services
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
+            if (user.Id == _client.CurrentUser.Id)
+            {
+                var musicPlayer = _audioService.GetPlayer<MusicPlayer>(user.Guild.Id);
+                if (musicPlayer != null)
+                {
+                    await musicPlayer.LeaveAndDisposeAsync(false);
+                }
+                return;
+            }
+
             using (var db = _db.GetDbContext())
             {
                 var guildDb = db.Guilds.FirstOrDefault(g => g.GuildId == user.Guild.Id);
@@ -149,7 +169,7 @@ namespace RiasBot.Services
                 .Replace("%server%", Format.Bold(user.Guild.Name))
                 .Replace("%avatar%", user.GetRealAvatarUrl()).ToString();
 
-        private async Task ShardConnected(DiscordSocketClient client)
+        private async Task ShardConnectedAsync(DiscordSocketClient client)
         {
             if (!_allShardsDoneConnection)
                 _shardsConnected++;
@@ -160,18 +180,31 @@ namespace RiasBot.Services
             if (_shardsConnected == _recommendedShardCount && !_allShardsDoneConnection)
             {
                 await _client.GetGuild(_creds.OwnerServerId).DownloadUsersAsync().ConfigureAwait(false);
-                await _lavaShardClient.StartAsync(_client, new Configuration
-                {
-                    Host = _creds.LavalinkConfig.Host,
-                    Port = _creds.LavalinkConfig.Port,
-                    Password = _creds.LavalinkConfig.Password
-                });
 
-                Console.WriteLine($"{DateTime.UtcNow:MMM dd hh:mm:ss} Lavalink started!");
+                try
+                {
+                    await _audioService.InitializeAsync();
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.ToString());
+                }
+
+                Log.Information("Lavalink started!");
                 _allShardsDoneConnection = true;
             }
 
             //TODO: make this better
+        }
+
+        private async Task ShardDisconnectedAsync(Exception ex, DiscordSocketClient client)
+        {
+            foreach (var guild in client.Guilds)
+            {
+                var player = _audioService.GetPlayer<MusicPlayer>(guild.Id);
+                if (player != null)
+                    await player.LeaveAndDisposeAsync(false);
+            }
         }
 
         public async Task AddAssignableRoleAsync(IUser user)

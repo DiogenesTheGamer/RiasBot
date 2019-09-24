@@ -1,12 +1,10 @@
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using RiasBot.Commons.Attributes;
 using RiasBot.Extensions;
 using RiasBot.Modules.Music.Commons;
-using RiasBot.Modules.Music.Extensions;
 using RiasBot.Modules.Music.Services;
 
 namespace RiasBot.Modules.Music
@@ -16,18 +14,24 @@ namespace RiasBot.Modules.Music
         [RiasCommand][Aliases]
         [Description][Usages]
         [RequireContext(ContextType.Guild)]
-        public async Task PlayAsync([Remainder] string keywords)
+        public async Task PlayAsync([Remainder] string query)
         {
-            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            var voiceChannel = ((IGuildUser) Context.User).VoiceChannel;
             if (!await CheckAsync(voiceChannel))
                 return;
 
-            if (Service.MusicPlayers.TryGetValue(Context.Guild.Id, out var musicPlayer)) 
-                await ValidateOutputChannelAsync(musicPlayer);
+            var player = Service.GetPlayer(Context.Guild.Id) ?? await Service.InitializePlayerAsync(voiceChannel, Context.Channel);
 
-            await Service.PlayAsync((ShardedCommandContext)Context, voiceChannel, keywords);
+            if (player?.OutputChannel is null)
+                return;
+
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            await player.PlayAsync((ShardedCommandContext) Context, query);
         }
-        
+
         [RiasCommand][Aliases]
         [Description][Usages]
         [RequireContext(ContextType.Guild)]
@@ -36,8 +40,12 @@ namespace RiasBot.Modules.Music
             var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
             if (!await CheckAsync(voiceChannel))
                 return;
-            
-            await Service.StopAsync(Context.Guild);
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await player.LeaveAndDisposeAsync();
         }
 
         [RiasCommand]
@@ -46,16 +54,50 @@ namespace RiasBot.Modules.Music
         [Usages]
         [RequireContext(ContextType.Guild)]
         public async Task PauseAsync()
-            => await ExecuteMusicCommandAsync(async () => await Service.PauseAsync(Context.Guild));
-        
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.PauseAsync();
+        }
+
         [RiasCommand]
         [Aliases]
         [Description]
         [Usages]
         [RequireContext(ContextType.Guild)]
         public async Task ResumeAsync()
-            => await ExecuteMusicCommandAsync(async () => await Service.ResumeAsync(Context.Guild));
-        
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.ResumeAsync();
+        }
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -63,8 +105,25 @@ namespace RiasBot.Modules.Music
         [RequireContext(ContextType.Guild)]
         [RateLimit(1, 5, RateLimitType.GuildUser)]
         public async Task QueueAsync(int page = 1)
-            => await ExecuteMusicCommandAsync(async () => await Service.QueueAsync(Context.Guild, page));
-        
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.QueueAsync(page);
+        }
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -72,8 +131,25 @@ namespace RiasBot.Modules.Music
         [RequireContext(ContextType.Guild)]
         [RateLimit(1, 5, RateLimitType.GuildUser)]
         public async Task NowPlayingAsync()
-            => await ExecuteMusicCommandAsync(async () => await Service.NowPlayingAsync(Context.Guild));
-        
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.NowPlayingAsync();
+        }
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -81,8 +157,25 @@ namespace RiasBot.Modules.Music
         [RequireContext(ContextType.Guild)]
         [RateLimit(1, 5, RateLimitType.GuildUser)]
         public async Task SkipAsync()
-            => await ExecuteMusicCommandAsync(async () => await Service.SkipAsync(Context.Guild));
-        
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.SkipAsync();
+        }
+
         [RiasCommand]
         [Aliases]
         [Description]
@@ -90,87 +183,205 @@ namespace RiasBot.Modules.Music
         [RequireContext(ContextType.Guild)]
         [RateLimit(1, 5, RateLimitType.GuildUser)]
         public async Task SkipToAsync([Remainder] string title)
-            => await ExecuteMusicCommandAsync(async () => await Service.SkipToAsync(Context.Guild, title));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        [RateLimit(1, 5, RateLimitType.GuildUser)]
-        public async Task SeekAsync(string time) 
-            => await ExecuteMusicCommandAsync(async () => await Service.SeekAsync(Context.Guild, time));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        [RateLimit(1, 5, RateLimitType.GuildUser)]
-        public async Task ReplayAsync() 
-            => await ExecuteMusicCommandAsync(async () => await Service.ReplayAsync(Context.Guild));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        [RateLimit(1, 5, RateLimitType.GuildUser)]
-        public async Task VolumeAsync(int? volume = null) 
-            => await ExecuteMusicCommandAsync(async () => await Service.VolumeAsync(Context.Guild, volume));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        public async Task ShuffleAsync(int? volume = null) 
-            => await ExecuteMusicCommandAsync(async () => await Service.ShuffleAsync(Context.Guild));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        public async Task ClearAsync(int? volume = null) 
-            => await ExecuteMusicCommandAsync(async () => await Service.ClearAsync(Context.Guild));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        [RateLimit(1, 5, RateLimitType.GuildUser)]
-        public async Task RemoveAsync([Remainder] string title) 
-            => await ExecuteMusicCommandAsync(async () => await Service.RemoveAsync(Context.Guild, title));
-        
-        [RiasCommand]
-        [Aliases]
-        [Description]
-        [Usages]
-        [RequireContext(ContextType.Guild)]
-        [RateLimit(1, 5, RateLimitType.GuildUser)]
-        public async Task RepeatAsync() 
-            => await ExecuteMusicCommandAsync(async () => await Service.RepeatAsync(Context.Guild));
-
-        private async Task ExecuteMusicCommandAsync(Action command)
         {
             var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
             if (!await CheckAsync(voiceChannel))
                 return;
 
-            if (Service.MusicPlayers.TryGetValue(Context.Guild.Id, out var musicPlayer))
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
             {
-                await ValidateOutputChannelAsync(musicPlayer);
-                if (musicPlayer.Channel.Id == Context.Channel.Id)
-                {
-                    command.Invoke();
-                }
-                else
-                {
-                    await ReplyErrorAsync("output_channel_commands");
-                }
+                await ReplyErrorAsync("output_channel_commands");
+                return;
             }
+
+            await player.SkipToAsync(title);
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task SeekAsync(string time)
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.SeekAsync(time);
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task ReplayAsync()
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.PlayNextTrackAsync((Track) player.CurrentTrack);
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task VolumeAsync(int? volume = null)
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.SetVolumeAsync(volume);
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task ShuffleAsync()
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.ShuffleAsync();
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task ClearAsync()
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.ClearAsync();
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task RemoveAsync([Remainder] string title)
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.RemoveAsync(title);
+        }
+
+        [RiasCommand]
+        [Aliases]
+        [Description]
+        [Usages]
+        [RequireContext(ContextType.Guild)]
+        [RateLimit(1, 5, RateLimitType.GuildUser)]
+        public async Task RepeatAsync()
+        {
+            var voiceChannel = ((IVoiceState)Context.User).VoiceChannel;
+            if (!await CheckAsync(voiceChannel))
+                return;
+
+            var player = Service.GetPlayer(Context.Guild.Id);
+            if (player is null)
+                return;
+
+            await ValidateOutputChannelAsync(player);
+            if (player.OutputChannel.Id != Context.Channel.Id)
+            {
+                await ReplyErrorAsync("output_channel_commands");
+                return;
+            }
+
+            await player.RepeatAsync();
         }
 
         private async Task<bool> CheckAsync(IGuildChannel voiceChannel)
@@ -181,16 +392,16 @@ namespace RiasBot.Modules.Music
                 return false;
             }
 
-            var botVoiceChannel = (await Context.Guild.GetCurrentUserAsync()).VoiceChannel;
-            if (botVoiceChannel != null)
-                if (voiceChannel.Id != botVoiceChannel.Id)
-                {
-                    await ReplyErrorAsync("not_same_vc");
-                    return false;
-                }
+            var currentUser = await Context.Guild.GetCurrentUserAsync();
 
-            var socketGuildUser = await Context.Guild.GetCurrentUserAsync();
-            var preconditions = socketGuildUser.GetPermissions(voiceChannel);
+            var botVoiceChannel = currentUser.VoiceChannel;
+            if (botVoiceChannel != null && voiceChannel.Id != botVoiceChannel.Id)
+            {
+                await ReplyErrorAsync("not_same_vc");
+                return false;
+            }
+
+            var preconditions = currentUser.GetPermissions(voiceChannel);
             if (!preconditions.Connect)
             {
                 await ReplyErrorAsync("no_connect_permission", voiceChannel.Name);
@@ -200,29 +411,30 @@ namespace RiasBot.Modules.Music
             return true;
         }
 
-        private async Task ValidateOutputChannelAsync(MusicPlayer musicPlayer)
+        private async Task ValidateOutputChannelAsync(MusicPlayer player)
         {
-            var reason = MusicExtensions.CheckOutputChannel((DiscordShardedClient)Context.Client, musicPlayer.Guild, musicPlayer.Channel);
-            switch (reason)
+            var outputChannelState = MusicUtils.CheckOutputChannel((DiscordShardedClient)Context.Client, Context.Guild.Id, player.OutputChannel);
+            switch (outputChannelState)
             {
-                case "NULL":
-                    ChangeMusicOutputChannel(musicPlayer);
+                case OutputChannelState.Null:
+                    ChangeMusicOutputChannel(player);
                     await Context.Channel.SendErrorMessageAsync($"{GetText("output_channel_null")} {GetText("new_output_channel")}");
                     break;
-                case "NO_SEND_MESSAGES_PERMISSION":
-                    ChangeMusicOutputChannel(musicPlayer);
-                    await Context.Channel.SendErrorMessageAsync($"{GetText("output_channel_no_send_perm", musicPlayer.Channel.Name)} " +
+                case OutputChannelState.NoViewPermission:
+                    ChangeMusicOutputChannel(player);
+                    await Context.Channel.SendErrorMessageAsync($"{GetText("output_channel_no_view_perm", player.OutputChannel.Name)} " +
                                                                 $"{GetText("new_output_channel")}");
                     break;
-                case "NO_VIEW_CHANNEL_PERMISSION":
-                    ChangeMusicOutputChannel(musicPlayer);
-                    await Context.Channel.SendErrorMessageAsync($"{GetText("output_channel_no_view_perm", musicPlayer.Channel.Name)} " +
+                case OutputChannelState.NoSendPermission:
+                    ChangeMusicOutputChannel(player);
+                    await Context.Channel.SendErrorMessageAsync($"{GetText("output_channel_no_send_perm", player.OutputChannel.Name)} " +
                                                                 $"{GetText("new_output_channel")}");
                     break;
                 default: return;
             }
         }
 
-        private void ChangeMusicOutputChannel(MusicPlayer musicPlayer) => musicPlayer.Channel = Context.Channel;
+        private void ChangeMusicOutputChannel(MusicPlayer player)
+            => player.ChangeOutputChannel(Context.Channel);
     }
 }

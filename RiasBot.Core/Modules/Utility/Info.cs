@@ -7,9 +7,11 @@ using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using Lavalink4NET;
+using Lavalink4NET.Player;
 using RiasBot.Commons.Attributes;
 using RiasBot.Extensions;
-using RiasBot.Modules.Music.Services;
+using RiasBot.Modules.Music.Commons;
 using RiasBot.Services;
 
 namespace RiasBot.Modules.Utility
@@ -21,14 +23,14 @@ namespace RiasBot.Modules.Utility
             private readonly DiscordShardedClient _client;
             private readonly IBotCredentials _creds;
             private readonly InteractiveService _is;
-            private readonly MusicService _musicService;
+            private readonly IAudioService _audioService;
 
-            public Info(DiscordShardedClient client, IBotCredentials creds, InteractiveService iss, MusicService musicService)
+            public Info(DiscordShardedClient client, IBotCredentials creds, InteractiveService iss, IAudioService audioService)
             {
                 _client = client;
                 _creds = creds;
                 _is = iss;
-                _musicService = musicService;
+                _audioService = audioService;
             }
 
             [RiasCommand][Aliases]
@@ -54,15 +56,18 @@ namespace RiasBot.Modules.Utility
                 var playingPlayers = 0;
                 var afkPlayers = 0;
 
-                foreach (var musicPlayer in _musicService.MusicPlayers.Values)
+                foreach (var musicPlayer in _audioService.GetPlayers<MusicPlayer>())
                 {
-                    var player = musicPlayer.Player;
-                    
-                    if (player.IsPlaying && !player.IsPaused)
-                        playingPlayers++;
-                    
-                    if (musicPlayer.CurrentTrack is null || player.IsPlaying && player.IsPaused)
-                        afkPlayers++;
+                    switch (musicPlayer.State)
+                    {
+                        case PlayerState.Playing:
+                            playingPlayers++;
+                            break;
+                        case PlayerState.NotPlaying:
+                        case PlayerState.Paused:
+                            afkPlayers++;
+                            break;
+                    }
                 }
 
                 var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor)

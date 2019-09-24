@@ -67,7 +67,8 @@ namespace RiasBot.Services.Implementation
         /// </summary>
         public string GetText(ulong guildId, string lowerModuleTypeName, string key, params object[] args)
         {
-            return string.Format(key.StartsWith("#") ? GetText(guildId, key.Substring(1)) : GetText(guildId, lowerModuleTypeName + "_" + key), args);
+            var format = key.StartsWith("#") ? GetText(guildId, key.Substring(1)) : GetText(guildId, lowerModuleTypeName + "_" + key);
+            return string.Format(format, args);
         }
     }
 }

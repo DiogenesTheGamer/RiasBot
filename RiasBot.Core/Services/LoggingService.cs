@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -7,7 +5,6 @@ using Discord.WebSocket;
 using RiasBot.Commons.Attributes;
 using Serilog;
 using Serilog.Events;
-using Victoria;
 
 namespace RiasBot.Services
 {
@@ -16,12 +13,11 @@ namespace RiasBot.Services
     {
         public string CommandArguments { private get; set; }
 
-        public LoggingService(DiscordShardedClient client, CommandService commands, LavaShardClient lavaShardClient)
+        public LoggingService(DiscordShardedClient client, CommandService commands)
         {
             client.Log += OnDiscordLogAsync;
             commands.Log += OnDiscordLogAsync;
             commands.CommandExecuted += OnCommandLogAsync;
-            lavaShardClient.Log += OnDiscordLogAsync;
         }
 
         private Task OnDiscordLogAsync(LogMessage msg)

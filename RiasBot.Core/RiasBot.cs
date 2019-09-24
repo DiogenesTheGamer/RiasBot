@@ -5,18 +5,20 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Lavalink4NET;
+using Lavalink4NET.DiscordNet;
+using Lavalink4NET.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using RiasBot.Commons.Attributes;
 using RiasBot.Services;
 using RiasBot.Services.Implementation;
-using Victoria;
 
 namespace RiasBot
 {
     public class RiasBot
     {
         public const string Author = "Koneko#0001";
-        public const string Version = "2.0.0-alpha6.8";
+        public const string Version = "2.0.0-alpha7";
 
         public static uint ConfirmColor { get; set; }
         public static uint ErrorColor { get; set; }
@@ -32,6 +34,7 @@ namespace RiasBot
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Verbose,
+                    TotalShards = 3,
                     ExclusiveBulkDelete = true
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
@@ -40,7 +43,16 @@ namespace RiasBot
                     LogLevel = LogSeverity.Verbose
                 }))
                 .AddSingleton<IBotCredentials>(credentials)
-                .AddSingleton<LavaShardClient>();
+                .AddSingleton<IAudioService, LavalinkNode>()
+                .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>()
+                .AddSingleton<ILogger, LavalinkLogger>()
+                .AddSingleton(new LavalinkNodeOptions
+                {
+                    RestUri = $"http://{credentials.LavalinkConfig.Host}:{credentials.LavalinkConfig.Port}/",
+                    WebSocketUri = $"ws://{credentials.LavalinkConfig.Host}:{credentials.LavalinkConfig.Port}/",
+                    Password = credentials.LavalinkConfig.Password,
+                    DisconnectOnStop = false
+                });
 
             var assembly = Assembly.GetAssembly(typeof(RiasBot));
 

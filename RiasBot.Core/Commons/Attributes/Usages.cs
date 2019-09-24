@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Discord;
 using Discord.Commands;
-using RiasBot.Services;
 using RiasBot.Services.Implementation;
 
 namespace RiasBot.Commons.Attributes
