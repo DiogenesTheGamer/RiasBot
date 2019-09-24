@@ -34,7 +34,7 @@ namespace RiasBot
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Verbose,
-                    TotalShards = 3,
+                    TotalShards = 10,
                     ExclusiveBulkDelete = true
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
