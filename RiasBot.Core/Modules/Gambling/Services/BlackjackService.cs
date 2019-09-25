@@ -16,49 +16,55 @@ namespace RiasBot.Modules.Gambling.Services
         public readonly IBotCredentials Creds;
         public readonly DbService Db;
         public readonly ITranslations Translations;
-        
+
         private readonly ConcurrentDictionary<ulong, BlackjackGame> _blackjackGames = new ConcurrentDictionary<ulong, BlackjackGame>();
-        
+
         public BlackjackService(DiscordShardedClient client, IBotCredentials creds, DbService db, ITranslations translations)
         {
             Client = client;
             Creds = creds;
             Db = db;
             Translations = translations;
-            
+
             client.ReactionAdded += OnReactionAddedAsync;
             client.ReactionRemoved += OnReactionRemovedAsync;
         }
-        
+
         public BlackjackGame GetOrCreateGame(IGuildUser user)
         {
             var bj =  _blackjackGames.GetOrAdd(user.Id, new BlackjackGame(this));
             return bj;
         }
-        
+
         public BlackjackGame GetGame(IGuildUser user)
         {
             _blackjackGames.TryGetValue(user.Id, out var bj);
             return bj;
         }
-        
+
         public BlackjackGame RemoveGame(IGuildUser user)
         {
             _blackjackGames.TryRemove(user.Id, out var bj);
             return bj;
         }
-        
+
         private async Task OnReactionAddedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            if (!reaction.User.IsSpecified)
+                return;
+
             var bj = GetGame((IGuildUser)reaction.User.Value);
             if (bj != null)
             {
                 await bj.UpdateGameAsync(reaction);
             }
         }
-        
+
         private async Task OnReactionRemovedAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            if (!reaction.User.IsSpecified)
+                return;
+
             var bj = GetGame((IGuildUser)reaction.User.Value);
             if (bj != null)
             {
@@ -68,7 +74,7 @@ namespace RiasBot.Modules.Gambling.Services
                 }
             }
         }
-        
+
         public int GetCurrency(IGuildUser user)
         {
             using (var db = Db.GetDbContext())
