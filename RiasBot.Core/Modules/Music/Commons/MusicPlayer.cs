@@ -88,6 +88,9 @@ namespace RiasBot.Modules.Music.Commons
                     break;
             }
 
+            if (track is null && _queue.Count > 0)
+                track = (Track) _queue[0];
+
             if (track is null)
                 return;
 
@@ -604,11 +607,11 @@ namespace RiasBot.Modules.Music.Commons
             }
 
             int? index = null;
-            if (title.StartsWith("#"))
-            {
-                if (int.TryParse(title.Substring(1), out var ind))
-                    index = ind;
-            }
+
+            var indexTitle = title.StartsWith("#") ? title.Substring(1) : title;
+
+            if (int.TryParse(indexTitle, out var ind))
+                index = ind;
 
             Track track;
 

@@ -23,9 +23,9 @@ namespace RiasBot.Services
     {
         private readonly DiscordShardedClient _client;
         private readonly IAudioService _audioService;
+        private readonly MusicService _musicService;
         private readonly IBotCredentials _creds;
         private readonly DbService _db;
-        private readonly IServiceProvider _services;
 
         private Timer DblTimer { get; }
 
@@ -37,13 +37,13 @@ namespace RiasBot.Services
         private int _shardsConnected;
         private int _recommendedShardCount;
 
-        public BotService(DiscordShardedClient client, IAudioService audioService, IBotCredentials creds, DbService db, IServiceProvider services)
+        public BotService(DiscordShardedClient client, IAudioService audioService, MusicService musicService, IBotCredentials creds, DbService db)
         {
             _client = client;
             _audioService = audioService;
+            _musicService = musicService;
             _creds = creds;
             _db = db;
-            _services = services;
 
             _client.ShardConnected += ShardConnectedAsync;
             _client.ShardDisconnected += ShardDisconnectedAsync;
@@ -113,7 +113,7 @@ namespace RiasBot.Services
 
         private async Task UserLeftAsync(SocketGuildUser user)
         {
-            if (user.Id == _client.CurrentUser.Id)
+            if (user.Id == _client.CurrentUser.Id && _musicService.LavalinkOk)
             {
                 var musicPlayer = _audioService.GetPlayer<MusicPlayer>(user.Guild.Id);
                 if (musicPlayer != null)
@@ -201,9 +201,7 @@ namespace RiasBot.Services
         {
             foreach (var guild in client.Guilds)
             {
-                var musicService = _services.GetRequiredService<MusicService>();
-                if (!musicService.LavalinkOk) continue;
-
+                if (!_musicService.LavalinkOk) continue;
                 var player = _audioService.GetPlayer<MusicPlayer>(guild.Id);
                 if (player != null)
                     await player.LeaveAndDisposeAsync(false);

@@ -269,7 +269,7 @@
   "music_channel_connected": "Connected to **{0}**.",
   "music_track_load_no_matches": "I couldn't find any track.",
   "music_track_load_failed": "An error occured on loading the tracks. Either the tracks are private, unavailable or the playlist is private. This also can have multiple reasons, you can report it in the [Support Server]({0}).",
-  "music_enqueuing_tracks": "Enqueueing the tracks, please wait.",
+  "music_enqueuing_tracks": "Enqueuing the tracks, please wait.",
   "music_tracks_enqueued": "Enqueued {0} tracks from {1}.",
   "music_choose_track": "Choose a track by typing the index. You have 1 minute",
   "music_now_playing": "Now playing",
