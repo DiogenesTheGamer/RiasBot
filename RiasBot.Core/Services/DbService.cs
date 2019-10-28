@@ -26,7 +26,9 @@ namespace RiasBot.Services
 
                 connectionString.Append("Database=").Append(creds.DatabaseConfig.Database).Append(";")
                     .Append("Username=").Append(creds.DatabaseConfig.Username).Append(";")
-                    .Append("Password=").Append(creds.DatabaseConfig.Password);
+                    .Append("Password=").Append(creds.DatabaseConfig.Password).Append(";")
+                    .Append("Maximum Pool Size=280").Append(";")
+                    .Append("Timeout=30");
 
                 optionsBuilder.UseNpgsql(connectionString.ToString());
                 _options = optionsBuilder.Options;

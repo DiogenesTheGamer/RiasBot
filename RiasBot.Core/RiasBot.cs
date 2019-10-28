@@ -10,6 +10,7 @@ using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using RiasBot.Commons.Attributes;
+using RiasBot.Modules.Nsfw.Services;
 using RiasBot.Services;
 using RiasBot.Services.Implementation;
 
@@ -18,7 +19,7 @@ namespace RiasBot
     public class RiasBot
     {
         public const string Author = "Koneko#0001";
-        public const string Version = "2.0.0-alpha7.3";
+        public const string Version = "2.0.0-alpha7.4";
 
         public static uint ConfirmColor { get; set; }
         public static uint ErrorColor { get; set; }
@@ -34,7 +35,6 @@ namespace RiasBot
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Verbose,
-                    TotalShards = 10,
                     ExclusiveBulkDelete = true
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
