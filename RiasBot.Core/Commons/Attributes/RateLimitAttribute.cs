@@ -41,8 +41,6 @@ namespace RiasBot.Commons.Attributes
             {
                 case RateLimitType.User:
                     return service.GetUserRule(context.User, command);
-                case RateLimitType.Channel:
-                    return service.GetChannelRule(context.Channel, command);
                 case RateLimitType.Guild:
                     return service.GetGuildRule(context.Guild, command);
                 case RateLimitType.GuildUser:
@@ -57,7 +55,6 @@ namespace RiasBot.Commons.Attributes
     {
         Global,
         User,
-        Channel,
         Guild,
         GuildUser
     }

@@ -32,12 +32,6 @@ namespace RiasBot.Services
             => $"user:{user.Id}/{GetRule(command)}";
 
         /// <summary>
-        /// Get a RateLimit rule for channel ratelimits.
-        /// </summary>
-        public string GetChannelRule(IChannel channel, CommandInfo command)
-            => $"channel:{channel.Id}/{GetRule(command)}";
-
-        /// <summary>
         /// Get a RateLimit rule for guild ratelimits.
         /// </summary>
         public string GetGuildRule(IGuild guild, CommandInfo command)

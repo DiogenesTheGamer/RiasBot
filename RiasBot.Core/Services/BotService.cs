@@ -323,8 +323,8 @@ namespace RiasBot.Services
                         content.Headers.Clear();
                         content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
                         http.DefaultRequestHeaders.Add("Authorization", _creds.DiscordBotsListApiKey);
-
-                        await http.PostAsync($"https://discordbots.org/api/bots/{_client.CurrentUser.Id}/stats", content).ConfigureAwait(false);
+                        
+                        await http.PostAsync($"https://top.gg/api/bots/{_client.CurrentUser.Id}/stats", content).ConfigureAwait(false);
                     }
                 }
             }

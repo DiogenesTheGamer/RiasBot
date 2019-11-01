@@ -127,13 +127,15 @@ namespace RiasBot.Services
             var errorReason = result.ErrorReason;
             if (errorReason.StartsWith("#"))
             {
+                if (errorReason.Contains("rate_limit"))
+                    return;
+                
                 var errorReasonArgs = errorReason.Split(":");
                 errorReason = _tr.GetText(context.Guild.Id, null, errorReasonArgs[0], errorReasonArgs.Skip(1).ToArray());
             }
+            
             var embed = new EmbedBuilder().WithColor(_creds.ConfirmColor).WithDescription(errorReason);
-            var timeoutMsg = await msg.Channel.SendMessageAsync(embed: embed.Build());
-            await Task.Delay(10000);
-            await timeoutMsg.DeleteAsync();
+            await msg.Channel.SendMessageAsync(embed: embed.Build());
         }
     }
 }
